@@ -1,5 +1,7 @@
 plugins {
     id 'com.android.library'
+    id 'maven-publish'
+    id 'maven'
 }
 
 android {
@@ -63,3 +65,88 @@ def removeClass(File classDir, String... classes) {
         println("${result ? "success" : "fail"} delete className=${className} in classDir=$classDir")
     }
 }
+
+group = 'com.coofee'
+version = '0.0.5'
+
+repositories {
+//    maven { url 'https://maven.aliyun.com/repository/google' }
+//    maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    maven { url "https://jitpack.io" }
+    google()
+    mavenCentral()
+}
+
+afterEvaluate {
+    publish.dependsOn assembleRelease
+    publish.mustRunAfter assembleRelease
+
+    publishToMavenLocal.dependsOn assembleRelease
+    publishToMavenLocal.mustRunAfter assembleRelease
+
+    publishing {
+
+        repositories {
+            maven {
+                url "${MAVEN_URL}"
+                credentials {
+                    username MAVEN_USERNAME
+                    password MAVEN_PASSWORD
+                }
+            }
+        }
+
+        publications {
+
+            aar(MavenPublication) {
+                groupId project.group
+                artifactId project.name.toLowerCase()
+                version project.version
+
+                artifact file("$buildDir/outputs/aar/${project.name}-release.aar")
+
+//                pom.withXml(createPomDependencies(["implementation"]))
+            }
+        }
+    }
+}
+
+//uploadArchives {
+//    repositories.mavenDeployer {
+//        repository(url: uri("${MAVEN_URL}")) {
+//            authentication(userName: MAVEN_USERNAME, password: MAVEN_PASSWORD)
+//        }
+//
+//        pom.groupId = project.group
+//        pom.artifactId = project.name.toLowerCase()
+//        pom.version = project.version
+//    }
+//}
+//
+// The publications doesn't know about our AAR dependencies, so we have to manually add them to the pom
+// Credit: http://stackoverflow.com/questions/24743562/gradle-not-including-dependencies-in-published-pom-xml
+//def createPomDependencies(configurationNames) {
+//    return {
+//        def dependenciesNode = asNode().appendNode('dependencies')
+//        configurationNames.each { configurationName ->
+//            configurations[configurationName].allDependencies.each {
+//                if (it.group != null && it.name != null) {
+//                    def dependencyNode = dependenciesNode.appendNode('dependency')
+//                    dependencyNode.appendNode('groupId', it.group)
+//                    dependencyNode.appendNode('artifactId', it.name)
+//                    dependencyNode.appendNode('version', it.version)
+//
+//                    //If there are any exclusions in dependency
+//                    if (it.excludeRules.size() > 0) {
+//                        def exclusionsNode = dependencyNode.appendNode('exclusions')
+//                        it.excludeRules.each { rule ->
+//                            def exclusionNode = exclusionsNode.appendNode('exclusion')
+//                            exclusionNode.appendNode('groupId', rule.group)
+//                            exclusionNode.appendNode('artifactId', rule.module)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}

@@ -1,4 +1,3 @@
 rootProject.name = "ShadowApp"
 include ':app'
 include ':shadow'
-include ':stub'
