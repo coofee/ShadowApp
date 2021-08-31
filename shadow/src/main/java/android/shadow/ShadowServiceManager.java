@@ -23,7 +23,14 @@ public class ShadowServiceManager {
     }
 
     public static Object getService(String serviceName) {
-        ShadowConfig config = ShadowServiceManager.sShadowConfig;
+        return getService(serviceName, ShadowServiceManager.sShadowConfig);
+    }
+
+    public static Object getService(String serviceName, ShadowConfig config) {
+        if (config == null) {
+            config = ShadowServiceManager.sShadowConfig;
+        }
+
         if (config == null) {
             return null;
         }
@@ -33,12 +40,12 @@ public class ShadowServiceManager {
             return null;
         }
 
-        if (sShadowConfig.interceptAll) {
+        if (config.interceptAll) {
             ShadowLog.e("intercept service=" + serviceName, new Throwable());
             return serviceEntry.service;
         }
 
-        if (StackTraceUtil.invokeBy(sShadowConfig.prefixSet)) {
+        if (StackTraceUtil.invokeBy(config.prefixSet)) {
             ShadowLog.e("intercept service=" + serviceName, new Throwable());
             return serviceEntry.service;
         }

@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 public class ShadowTelephonyManager extends TelephonyManager {
 
@@ -113,5 +114,26 @@ public class ShadowTelephonyManager extends TelephonyManager {
     public Map<Integer, List<EmergencyNumber>> getEmergencyNumberList() {
         ShadowLog.e("access getEmergencyNumberList", new Throwable());
         return ShadowServiceManager.config().telephonyManagerProvider().getEmergencyNumberList();
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public void requestCellInfoUpdate(@NonNull Executor executor, @NonNull CellInfoCallback callback) {
+        ShadowLog.e("access requestCellInfoUpdate", new Throwable());
+        ShadowServiceManager.config().telephonyManagerProvider().requestCellInfoUpdate(executor, callback);
+    }
+
+    @SuppressLint("MissingPermission")
+//    @Override
+    public List<NeighboringCellInfo> getNeighboringCellInfo() {
+        ShadowLog.e("access getNeighboringCellInfo", new Throwable());
+        return ShadowServiceManager.config().telephonyManagerProvider().getNeighboringCellInfo();
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public ServiceState getServiceState() {
+        ShadowLog.e("access getServiceState", new Throwable());
+        return ShadowServiceManager.config().telephonyManagerProvider().getServiceState();
     }
 }

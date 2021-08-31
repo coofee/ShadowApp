@@ -2,6 +2,8 @@ package android.shadow;
 
 public class ShadowLog {
 
+    public static boolean debug = false;
+
     public interface ILog {
         void e(String tag, String msg, Throwable e);
 
@@ -27,13 +29,13 @@ public class ShadowLog {
     }
 
     public static void e(String msg, Throwable e) {
-        if (ShadowServiceManager.debug()) {
+        if (debug || ShadowServiceManager.debug()) {
             sLogImpl.e(ShadowServiceManager.TAG, msg, e);
         }
     }
 
     public static void e(String msg) {
-        if (ShadowServiceManager.debug()) {
+        if (debug || ShadowServiceManager.debug()) {
             sLogImpl.e(ShadowServiceManager.TAG, msg);
         }
     }

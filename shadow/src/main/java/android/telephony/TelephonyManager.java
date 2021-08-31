@@ -2,9 +2,11 @@ package android.telephony;
 
 import android.content.Context;
 import android.telephony.emergency.EmergencyNumber;
+import androidx.annotation.NonNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 public class TelephonyManager {
     public TelephonyManager(Context context) {
@@ -73,5 +75,22 @@ public class TelephonyManager {
 
     public Map<Integer, List<EmergencyNumber>> getEmergencyNumberList() {
         throw new RuntimeException("Stub.");
+    }
+
+    public void requestCellInfoUpdate(@NonNull Executor executor, @NonNull CellInfoCallback callback) {
+        throw new RuntimeException("Stub.");
+    }
+
+    public List<NeighboringCellInfo> getNeighboringCellInfo() {
+        throw new RuntimeException("Stub.");
+    }
+
+    public ServiceState getServiceState() {
+        throw new RuntimeException("Stub.");
+
+    }
+
+    public abstract static class CellInfoCallback {
+
     }
 }

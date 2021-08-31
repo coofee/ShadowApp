@@ -2,9 +2,11 @@ package android.telephony;
 
 import android.content.Context;
 import android.telephony.emergency.EmergencyNumber;
+import androidx.annotation.NonNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 public interface ShadowTelephonyManagerProvider {
 
@@ -35,6 +37,12 @@ public interface ShadowTelephonyManagerProvider {
     String getGroupIdLevel1(Context context);
 
     Map<Integer, List<EmergencyNumber>> getEmergencyNumberList(Context context);
+
+    void requestCellInfoUpdate(@NonNull Executor executor, @NonNull TelephonyManager.CellInfoCallback callback);
+
+    List<NeighboringCellInfo> getNeighboringCellInfo();
+
+    ServiceState getServiceState();
 
     public static class Adapter implements ShadowTelephonyManagerProvider {
 
@@ -107,6 +115,22 @@ public interface ShadowTelephonyManagerProvider {
         public Map<Integer, List<EmergencyNumber>> getEmergencyNumberList(Context context) {
             return null;
         }
+
+        @Override
+        public void requestCellInfoUpdate(@NonNull Executor executor, @NonNull TelephonyManager.CellInfoCallback callback) {
+            return;
+        }
+
+        @Override
+        public List<NeighboringCellInfo> getNeighboringCellInfo() {
+            return null;
+        }
+
+        @Override
+        public ServiceState getServiceState() {
+            return null;
+        }
+
     }
 
     public static class Wrapper {
@@ -174,6 +198,18 @@ public interface ShadowTelephonyManagerProvider {
 
         public Map<Integer, List<EmergencyNumber>> getEmergencyNumberList() {
             return this.provider.getEmergencyNumberList(baseContext);
+        }
+
+        public void requestCellInfoUpdate(@NonNull Executor executor, @NonNull TelephonyManager.CellInfoCallback callback) {
+            this.provider.requestCellInfoUpdate(executor, callback);
+        }
+
+        public List<NeighboringCellInfo> getNeighboringCellInfo() {
+            return this.provider.getNeighboringCellInfo();
+        }
+
+        public ServiceState getServiceState() {
+            return this.provider.getServiceState();
         }
     }
 

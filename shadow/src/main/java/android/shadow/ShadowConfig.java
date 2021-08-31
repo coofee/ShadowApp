@@ -4,6 +4,8 @@ import android.app.Service;
 import android.content.Context;
 import android.location.ShadowLocationManager;
 import android.location.ShadowLocationManagerProvider;
+import android.net.wifi.ShadowWifiManager;
+import android.net.wifi.ShadowWifiManagerProvider;
 import android.telephony.ShadowTelephonyManager;
 import android.telephony.ShadowTelephonyManagerProvider;
 import androidx.annotation.NonNull;
@@ -36,6 +38,9 @@ public class ShadowConfig {
         this.serviceEntryMap = Collections.unmodifiableMap(new ConcurrentHashMap<>(builder.serviceEntryMap));
     }
 
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
 
     public ShadowTelephonyManagerProvider.Wrapper telephonyManagerProvider() {
         return (ShadowTelephonyManagerProvider.Wrapper) this.serviceEntryMap.get(Service.TELEPHONY_SERVICE).provider;
@@ -43,6 +48,10 @@ public class ShadowConfig {
 
     public ShadowLocationManagerProvider.Wrapper locationManagerProvider() {
         return (ShadowLocationManagerProvider.Wrapper) this.serviceEntryMap.get(Service.LOCATION_SERVICE).provider;
+    }
+
+    public ShadowWifiManagerProvider.Wrapper wifiManagerProvider() {
+        return (ShadowWifiManagerProvider.Wrapper) this.serviceEntryMap.get(Service.WIFI_SERVICE).provider;
     }
 
     public static class ServiceEntry {
@@ -71,6 +80,15 @@ public class ShadowConfig {
         private boolean debug;
 
         private final Map<String, ServiceEntry> serviceEntryMap = new HashMap<>();
+
+        protected Builder(ShadowConfig shadowConfig) {
+            this.baseContext = shadowConfig.baseContext;
+            this.applicationContext = shadowConfig.applicationContext;
+            this.prefixSet.addAll(shadowConfig.prefixSet);
+            this.interceptAll = shadowConfig.interceptAll;
+            this.debug = shadowConfig.debug;
+            this.serviceEntryMap.putAll(shadowConfig.serviceEntryMap);
+        }
 
         public Builder(@NonNull Context baseContext, @NonNull Context applicationContext) {
             this.baseContext = baseContext;
@@ -112,6 +130,11 @@ public class ShadowConfig {
 
         public Builder addTelephonyManager(ShadowTelephonyManager telephonyManager, ShadowTelephonyManagerProvider provider) {
             addService(Service.TELEPHONY_SERVICE, telephonyManager, new ShadowTelephonyManagerProvider.Wrapper(baseContext, provider));
+            return this;
+        }
+
+        public Builder addWifiManager(ShadowWifiManager wifiManager, ShadowWifiManagerProvider provider) {
+            addService(Service.WIFI_SERVICE, wifiManager, new ShadowWifiManagerProvider.Wrapper(baseContext, provider));
             return this;
         }
 
