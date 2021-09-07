@@ -44,7 +44,19 @@ android.libraryVariants.all { variant ->
     javaCompilerTask.doLast {
         javaCompilerTask.getOutputs().files.each { classDir ->
             println("javaCompilerTask.outputs=$classDir")
-            removeClass(classDir, 'android.telephony.TelephonyManager', 'android.telephony.TelephonyManager$CellInfoCallback', 'android.net.wifi.IWifiManager', 'android.net.wifi.WifiManager', 'android.net.wifi.WifiManager$LocalOnlyHotspotCallback', 'android.net.wifi.WifiManager$LocalOnlyHotspotReservation')
+            removeClass(
+                    classDir,
+                    'android.telephony.TelephonyManager',
+                    'android.telephony.TelephonyManager$CellInfoCallback',
+                    'android.net.wifi.IWifiManager',
+                    'android.net.wifi.WifiManager',
+                    'android.net.wifi.WifiManager$LocalOnlyHotspotCallback',
+                    'android.net.wifi.WifiManager$LocalOnlyHotspotReservation',
+//                    'android.app.ApplicationPackageManager',
+//                    'android.app.ContextImpl',
+//                    'android.app.ApplicationPackageManager',
+//                    'android.content.pm.IPackageManager'
+            )
         }
     }
 }

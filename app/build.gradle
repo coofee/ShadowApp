@@ -36,6 +36,12 @@ dependencies {
 //    implementation 'com.github.tiann:FreeReflection:3.1.0'
     implementation project(':shadow')
 
+    // https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy-android
+//    implementation 'net.bytebuddy:byte-buddy-android:1.11.15'
+    implementation 'net.bytebuddy:byte-buddy:1.11.15'
+    implementation 'net.bytebuddy:byte-buddy-android:1.11.15'
+
+
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
