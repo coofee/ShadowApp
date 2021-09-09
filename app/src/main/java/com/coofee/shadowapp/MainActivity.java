@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        android.os.Debug.waitForDebugger();
         setContentView(R.layout.activity_main);
 
         testClassLoader();
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.replace_package_manager).setOnClickListener(view -> {
             testPackageManager();
+
+            startService(new Intent(this, TestIntentService.class));
         });
     }
 
@@ -90,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
             DynamicType.Unloaded<?> make = new ByteBuddy()
 //            new ByteBuddy(ClassFileVersion.JAVA_V6)
                     .subclass(class_ApplicationPackageManager)
-//                    .method(ElementMatchers.namedOneOf("getInstalledPackages", "getInstalledApplications"))
-                    .method(ElementMatchers.any())
+                    .method(ElementMatchers.namedOneOf("getInstalledPackages", "getInstalledApplications"))
+//                    .method(ElementMatchers.any())
                     .intercept(InvocationHandlerAdapter.of(new InvocationHandler() {
                         @Override
                         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -135,7 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void testActivity() {
-        ShadowLog.e("MainActivity.testActivity()=" + this);
+        ShadowLog.e("MainActivity.testActivity()=" + this + ", getBaseContext()=" + getBaseContext());
+        Util.print(this);
 
         try {
             WifiManager wifiManager = (WifiManager) getSystemService(Service.WIFI_SERVICE);

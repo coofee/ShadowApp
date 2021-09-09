@@ -3,11 +3,14 @@ package android.shadow;
 import android.app.Application;
 import android.content.ComponentCallbacks;
 import android.content.Context;
-import android.content.MutableContextWrapper;
 
 public class ShadowApplication extends Application {
 
     public static ShadowApplication shadow(Application application) {
+        if (application instanceof ShadowApplication) {
+            return (ShadowApplication) application;
+        }
+
         return new ShadowApplication(application);
     }
 
@@ -22,9 +25,11 @@ public class ShadowApplication extends Application {
         this.baseContext = new ShadowContext(this);
     }
 
-    public ShadowApplication(Application application) {
+    private ShadowApplication(Application application) {
         this.application = application;
         this.baseContext = new ShadowContext(this);
+        super.attachBaseContext(this.baseContext);
+        this.originBaseContext = application;
     }
 
     @Override
@@ -35,7 +40,7 @@ public class ShadowApplication extends Application {
 
     @Override
     public Context getApplicationContext() {
-        return this;
+        return application;
     }
 
     @Override
@@ -51,39 +56,63 @@ public class ShadowApplication extends Application {
         }
 
         if (this == application) {
-            return ShadowServiceManager.sShadowConfig.baseContext.getSystemService(name);
+            return super.getSystemService(name);
+        } else {
+            return this.application.getSystemService(name);
         }
-
-        return application.getSystemService(name);
     }
 
     @Override
     public void registerComponentCallbacks(ComponentCallbacks callback) {
-        this.application.registerComponentCallbacks(callback);
+        if (this == application) {
+            super.registerComponentCallbacks(callback);
+        } else {
+            this.application.registerComponentCallbacks(callback);
+        }
     }
 
     @Override
     public void unregisterComponentCallbacks(ComponentCallbacks callback) {
-        this.application.unregisterComponentCallbacks(callback);
+        if (this == application) {
+            super.unregisterComponentCallbacks(callback);
+        } else {
+            this.application.unregisterComponentCallbacks(callback);
+        }
     }
 
     @Override
     public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {
-        this.application.registerActivityLifecycleCallbacks(callback);
+        if (this == application) {
+            super.registerActivityLifecycleCallbacks(callback);
+        } else {
+            this.application.registerActivityLifecycleCallbacks(callback);
+        }
     }
 
     @Override
     public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {
-        this.application.unregisterActivityLifecycleCallbacks(callback);
+        if (this == application) {
+            super.unregisterActivityLifecycleCallbacks(callback);
+        } else {
+            this.application.unregisterActivityLifecycleCallbacks(callback);
+        }
     }
 
     @Override
     public void registerOnProvideAssistDataListener(OnProvideAssistDataListener callback) {
-        this.application.registerOnProvideAssistDataListener(callback);
+        if (this == application) {
+            super.registerOnProvideAssistDataListener(callback);
+        } else {
+            this.application.registerOnProvideAssistDataListener(callback);
+        }
     }
 
     @Override
     public void unregisterOnProvideAssistDataListener(OnProvideAssistDataListener callback) {
-        this.application.unregisterOnProvideAssistDataListener(callback);
+        if (this == application) {
+            super.unregisterOnProvideAssistDataListener(callback);
+        } else {
+            this.application.unregisterOnProvideAssistDataListener(callback);
+        }
     }
 }

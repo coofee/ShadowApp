@@ -10,19 +10,23 @@ public class ShadowContext extends ContextWrapper {
         return new ShadowContext(application);
     }
 
+    public static ShadowContext shadowContext(Application application, Context context) {
+        return new ShadowContext(application, context);
+    }
+
     public final ShadowApplication shadowApplication;
 
     private final Object lock = new Object();
     private ShadowConfig config = null;
 
     public ShadowContext(Application application) {
-        super(new ShadowApplication(application));
+        super(ShadowApplication.shadow(application));
         this.shadowApplication = (ShadowApplication) getBaseContext();
     }
 
-    ShadowContext(ShadowApplication shadowApplication) {
-        super(shadowApplication);
-        this.shadowApplication = shadowApplication;
+    public ShadowContext(Application application, Context context) {
+        super(context);
+        this.shadowApplication = ShadowApplication.shadow(application);
     }
 
     @Override
@@ -47,7 +51,7 @@ public class ShadowContext extends ContextWrapper {
             return service;
         }
 
-        return shadowApplication.application.getSystemService(name);
+        return super.getSystemService(name);
     }
 
     public ShadowConfig onCreateShadowConfig() {
