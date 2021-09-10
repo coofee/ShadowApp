@@ -39,4 +39,11 @@ public class ShadowLog {
             sLogImpl.e(ShadowServiceManager.TAG, msg);
         }
     }
+
+    public static void logThrow(String msg) {
+        if (debug || ShadowServiceManager.debug()) {
+            sLogImpl.e(ShadowServiceManager.TAG, msg);
+            throw new RuntimeException(msg);
+        }
+    }
 }

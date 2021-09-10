@@ -11,8 +11,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.shadow.ShadowApplication;
-import android.shadow.ShadowContext;
 import android.shadow.ShadowLog;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
@@ -24,11 +22,13 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
@@ -45,17 +45,61 @@ public class MainActivity extends AppCompatActivity {
 
         testGetApplicationContext();
 
-        testShadowContext();
+//        testShadowContext();
 
-        testShadowApplication();
+//        testShadowApplication();
 
 //        testPackageManager();
 
         findViewById(R.id.replace_package_manager).setOnClickListener(view -> {
-            testPackageManager();
-
-            startService(new Intent(this, TestIntentService.class));
+//            testPackageManager();
+            try {
+                String s = UUID.randomUUID().toString().replace("-", "");
+                File file = new File("/data/local/tmp/", s);
+                exec("touch " + file.getAbsolutePath());
+            } catch (Throwable e) {
+                ShadowLog.e("touch file fail", e);
+            }
+            testActivity();
         });
+    }
+
+    private void exec(String command) {
+        BufferedReader out = null;
+        BufferedReader err = null;
+        try {
+            String[] commandArray = new String[]{"sh", "-c", command};
+            ShadowLog.e("try exec command=" + Arrays.toString(commandArray));
+            Process process = Runtime.getRuntime().exec(commandArray);
+            out = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = out.readLine()) != null) {
+                ShadowLog.e(line);
+            }
+
+            err = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            while ((line = err.readLine()) != null) {
+                ShadowLog.e(line);
+            }
+        } catch (Throwable e) {
+            ShadowLog.e("fail exec command=" + command, e);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (Throwable th) {
+                    th.printStackTrace();
+                }
+            }
+
+            if (err != null) {
+                try {
+                    err.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private void testClassLoader() {
@@ -146,13 +190,12 @@ public class MainActivity extends AppCompatActivity {
             ShadowLog.e("MainActivity.testActivity; wifiManager=" + wifiManager);
             List<ScanResult> scanResults = wifiManager.getScanResults();
         } catch (Throwable e) {
-            ShadowLog.e("fail testActivity", e);
+            ShadowLog.e("fail testActivity.getScanResults", e);
         }
 
         try {
             TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Service.TELEPHONY_SERVICE);
-            ShadowLog.e("MainActivity.testActivity; telephonyManager=" + telephonyManager);
-            telephonyManager.getDeviceId();
+            ShadowLog.e("MainActivity.testActivity; getDeviceId=" + telephonyManager.getDeviceId());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 telephonyManager.requestCellInfoUpdate(Executors.newSingleThreadExecutor(), new TelephonyManager.CellInfoCallback() {
                     @Override
@@ -162,7 +205,14 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         } catch (Throwable e) {
-            ShadowLog.e("fail testActivity", e);
+            ShadowLog.e("fail testActivity.getDeviceId", e);
+        }
+
+        try {
+            TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Service.TELEPHONY_SERVICE);
+            ShadowLog.e("MainActivity.testGetApplicationContext; getSubscriberId=" + telephonyManager.getSubscriberId());
+        } catch (Throwable e) {
+            ShadowLog.e("fail testGetApplicationContext.getSubscriberId", e);
         }
 
         try {
@@ -170,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
             ShadowLog.e("MainActivity.testActivity; locationManager=" + locationManager);
             locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         } catch (Throwable e) {
-            ShadowLog.e("fail testActivity", e);
+            ShadowLog.e("fail testActivity.getLastKnownLocation", e);
         }
 
     }
@@ -184,13 +234,12 @@ public class MainActivity extends AppCompatActivity {
             ShadowLog.e("MainActivity.testGetApplicationContext; wifiManager=" + wifiManager);
             List<ScanResult> scanResults = wifiManager.getScanResults();
         } catch (Throwable e) {
-            ShadowLog.e("fail testGetApplicationContext", e);
+            ShadowLog.e("fail testGetApplicationContext.getScanResults", e);
         }
 
         try {
             TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Service.TELEPHONY_SERVICE);
-            ShadowLog.e("MainActivity.testGetApplicationContext; telephonyManager=" + telephonyManager);
-            telephonyManager.getDeviceId();
+            ShadowLog.e("MainActivity.testGetApplicationContext; getDeviceId=" + telephonyManager.getDeviceId());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 telephonyManager.requestCellInfoUpdate(Executors.newSingleThreadExecutor(), new TelephonyManager.CellInfoCallback() {
                     @Override
@@ -200,7 +249,14 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         } catch (Throwable e) {
-            ShadowLog.e("fail testGetApplicationContext", e);
+            ShadowLog.e("fail testGetApplicationContext.getDeviceId", e);
+        }
+
+        try {
+            TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Service.TELEPHONY_SERVICE);
+            ShadowLog.e("MainActivity.testGetApplicationContext; getSubscriberId=" + telephonyManager.getSubscriberId());
+        } catch (Throwable e) {
+            ShadowLog.e("fail testGetApplicationContext.getSubscriberId", e);
         }
 
         try {
@@ -208,82 +264,9 @@ public class MainActivity extends AppCompatActivity {
             ShadowLog.e("MainActivity.testGetApplicationContext; locationManager=" + locationManager);
             locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         } catch (Throwable e) {
-            ShadowLog.e("fail testGetApplicationContext", e);
+            ShadowLog.e("fail testGetApplicationContext.getLastKnownLocation", e);
         }
 
     }
 
-    @SuppressLint("MissingPermission")
-    private void testShadowContext() {
-        ShadowContext shadowContext = ShadowContext.shadow(getApplication());
-        shadowContext.getApplicationContext();
-
-        ShadowLog.e("MainActivity.testShadowContext; shadowContext=" + shadowContext +
-                ", shadowContext.shadowApplication=" + shadowContext.shadowApplication +
-                ", shadowContext.getBaseContext=" + shadowContext.getBaseContext() +
-                ", getApplicationContext=" + getApplicationContext() +
-                ", getApplication=" + getApplication() +
-                ", getApplication.getBaseContext=" + getApplication().getBaseContext());
-
-        try {
-            WifiManager wifiManager = (WifiManager) shadowContext.getApplicationContext().getSystemService(Service.WIFI_SERVICE);
-            ShadowLog.e("MainActivity.testShadowContext; wifiManager=" + wifiManager);
-            List<ScanResult> scanResults = wifiManager.getScanResults();
-        } catch (Throwable e) {
-            ShadowLog.e("fail testShadowContext", e);
-        }
-
-        TelephonyManager telephonyManager = (TelephonyManager) shadowContext.getSystemService(Service.TELEPHONY_SERVICE);
-        ShadowLog.e("MainActivity.testShadowContext; telephonyManager=" + telephonyManager);
-        try {
-            telephonyManager.getDeviceId();
-        } catch (Throwable e) {
-            ShadowLog.e("fail testShadowContext", e);
-        }
-
-        try {
-            LocationManager locationManager = (LocationManager) shadowContext.getBaseContext().getSystemService(Service.LOCATION_SERVICE);
-            ShadowLog.e("MainActivity.testShadowContext; locationManager=" + locationManager);
-            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        } catch (Throwable e) {
-            ShadowLog.e("fail testShadowContext", e);
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private void testShadowApplication() {
-        ShadowApplication shadowApplication = ShadowApplication.shadow(getApplication());
-        shadowApplication.getApplicationContext();
-
-        ShadowLog.e("MainActivity.testShadowApplication; shadowApplication=" + shadowApplication +
-                ", shadowApplication.application=" + shadowApplication.application +
-                ", shadowApplication.getBaseContext=" + shadowApplication.getBaseContext() +
-                ", getApplicationContext=" + getApplicationContext() +
-                ", getApplication=" + getApplication() +
-                ", getApplication.getBaseContext=" + getApplication().getBaseContext());
-
-        try {
-            WifiManager wifiManager = (WifiManager) shadowApplication.getApplicationContext().getSystemService(Service.WIFI_SERVICE);
-            ShadowLog.e("MainActivity.testShadowApplication; wifiManager=" + wifiManager);
-            List<ScanResult> scanResults = wifiManager.getScanResults();
-        } catch (Throwable e) {
-            ShadowLog.e("fail testShadowApplication", e);
-        }
-
-        TelephonyManager telephonyManager = (TelephonyManager) shadowApplication.getSystemService(Service.TELEPHONY_SERVICE);
-        ShadowLog.e("MainActivity.testShadowApplication; telephonyManager=" + telephonyManager);
-        try {
-            telephonyManager.getDeviceId();
-        } catch (Throwable e) {
-            ShadowLog.e("fail testShadowApplication", e);
-        }
-
-        try {
-            LocationManager locationManager = (LocationManager) shadowApplication.getBaseContext().getSystemService(Service.LOCATION_SERVICE);
-            ShadowLog.e("MainActivity.testShadowApplication; locationManager=" + locationManager);
-            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        } catch (Throwable e) {
-            ShadowLog.e("fail testShadowApplication", e);
-        }
-    }
 }

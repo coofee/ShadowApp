@@ -1,14 +1,6 @@
 package android.shadow;
 
-import android.app.Service;
 import android.content.Context;
-import android.location.ShadowLocationManager;
-import android.location.ShadowLocationManagerProvider;
-import android.net.wifi.ShadowWifiManager;
-import android.net.wifi.ShadowWifiManagerProvider;
-import android.telephony.ShadowTelephonyManager;
-import android.telephony.ShadowTelephonyManagerProvider;
-import androidx.annotation.NonNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +16,7 @@ public class ShadowConfig {
 
     public final boolean debug;
 
-    final Map<String, ServiceEntry> serviceEntryMap;
+    public final Map<String, LinkedHashSet<ShadowServiceInterceptor>> interceptorMap;
 
     public ShadowConfig(Builder builder) {
         this.baseContext = builder.baseContext;
@@ -35,37 +27,12 @@ public class ShadowConfig {
         Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
         set.addAll(builder.prefixSet);
         this.prefixSet = Collections.unmodifiableSet(set);
-        this.serviceEntryMap = Collections.unmodifiableMap(new ConcurrentHashMap<>(builder.serviceEntryMap));
+
+        this.interceptorMap = Collections.unmodifiableMap(builder.interceptorMap);
     }
 
     public Builder newBuilder() {
         return new Builder(this);
-    }
-
-    public ShadowTelephonyManagerProvider.Wrapper telephonyManagerProvider() {
-        return (ShadowTelephonyManagerProvider.Wrapper) this.serviceEntryMap.get(Service.TELEPHONY_SERVICE).provider;
-    }
-
-    public ShadowLocationManagerProvider.Wrapper locationManagerProvider() {
-        return (ShadowLocationManagerProvider.Wrapper) this.serviceEntryMap.get(Service.LOCATION_SERVICE).provider;
-    }
-
-    public ShadowWifiManagerProvider.Wrapper wifiManagerProvider() {
-        return (ShadowWifiManagerProvider.Wrapper) this.serviceEntryMap.get(Service.WIFI_SERVICE).provider;
-    }
-
-    public static class ServiceEntry {
-        public final String serviceName;
-
-        public final Object service;
-
-        public final Object provider;
-
-        public ServiceEntry(String serviceName, Object service, Object provider) {
-            this.serviceName = serviceName;
-            this.service = service;
-            this.provider = provider;
-        }
     }
 
     public static class Builder {
@@ -79,7 +46,7 @@ public class ShadowConfig {
 
         private boolean debug;
 
-        private final Map<String, ServiceEntry> serviceEntryMap = new HashMap<>();
+        private final Map<String, LinkedHashSet<ShadowServiceInterceptor>> interceptorMap = new LinkedHashMap<>();
 
         protected Builder(ShadowConfig shadowConfig) {
             this.baseContext = shadowConfig.baseContext;
@@ -87,10 +54,10 @@ public class ShadowConfig {
             this.prefixSet.addAll(shadowConfig.prefixSet);
             this.interceptAll = shadowConfig.interceptAll;
             this.debug = shadowConfig.debug;
-            this.serviceEntryMap.putAll(shadowConfig.serviceEntryMap);
+            this.interceptorMap.putAll(shadowConfig.interceptorMap);
         }
 
-        public Builder(@NonNull Context baseContext, @NonNull Context applicationContext) {
+        public Builder(Context baseContext, Context applicationContext) {
             this.baseContext = baseContext;
             this.applicationContext = applicationContext;
         }
@@ -113,28 +80,36 @@ public class ShadowConfig {
             return this;
         }
 
-        public Builder addService(String serviceName, Object service, Object provider) {
-            if (serviceName == null || serviceName.isEmpty() || service == null || provider == null) {
+        public Builder add(ShadowServiceInterceptor interceptor) {
+            if (interceptor == null) {
                 return this;
             }
 
-            serviceEntryMap.put(serviceName, new ServiceEntry(serviceName, service, provider));
-            return this;
-        }
+            final String serviceName = interceptor.provideInterceptServiceName();
+            if (serviceName == null || serviceName.isEmpty()) {
+                ShadowLog.e("interceptor service name is null or empty; interceptor=" + interceptor);
+                return this;
+            }
 
+            LinkedHashSet<ShadowServiceInterceptor> interceptorSet = this.interceptorMap.get(serviceName);
+            if (interceptorSet == null) {
+                interceptorSet = new LinkedHashSet<>();
+                this.interceptorMap.put(serviceName, interceptorSet);
+            }
 
-        public Builder addLocationManager(ShadowLocationManager locationManager, ShadowLocationManagerProvider provider) {
-            addService(Service.LOCATION_SERVICE, locationManager, new ShadowLocationManagerProvider.Wrapper(baseContext, provider));
-            return this;
-        }
+            final boolean interceptAllMethod = interceptor.interceptAllMethod();
+            if (interceptAllMethod) {
+                interceptorSet.add(interceptor);
+                return this;
+            }
 
-        public Builder addTelephonyManager(ShadowTelephonyManager telephonyManager, ShadowTelephonyManagerProvider provider) {
-            addService(Service.TELEPHONY_SERVICE, telephonyManager, new ShadowTelephonyManagerProvider.Wrapper(baseContext, provider));
-            return this;
-        }
+            final Set<String> methodNames = interceptor.provideInterceptMethodNames();
+            if (methodNames == null || methodNames.isEmpty()) {
+                ShadowLog.e("interceptor method names is null or empty; interceptor=" + interceptor);
+                return this;
+            }
 
-        public Builder addWifiManager(ShadowWifiManager wifiManager, ShadowWifiManagerProvider provider) {
-            addService(Service.WIFI_SERVICE, wifiManager, new ShadowWifiManagerProvider.Wrapper(baseContext, provider));
+            interceptorSet.add(interceptor);
             return this;
         }
 

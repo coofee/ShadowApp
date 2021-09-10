@@ -32,7 +32,7 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.2.0'
+//    implementation 'androidx.annotation:annotation:1.2.0'
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
@@ -46,16 +46,8 @@ android.libraryVariants.all { variant ->
             println("javaCompilerTask.outputs=$classDir")
             removeClass(
                     classDir,
-                    'android.telephony.TelephonyManager',
-                    'android.telephony.TelephonyManager$CellInfoCallback',
-                    'android.net.wifi.IWifiManager',
-                    'android.net.wifi.WifiManager',
-                    'android.net.wifi.WifiManager$LocalOnlyHotspotCallback',
-                    'android.net.wifi.WifiManager$LocalOnlyHotspotReservation',
-//                    'android.app.ApplicationPackageManager',
-//                    'android.app.ContextImpl',
-//                    'android.app.ApplicationPackageManager',
-//                    'android.content.pm.IPackageManager'
+                    'android.os.ServiceManager',
+                    'android.os.ServiceManager$ServiceNotFoundException'
             )
         }
     }
