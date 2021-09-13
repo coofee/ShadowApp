@@ -3,9 +3,10 @@ package com.coofee.shadowapp;
 import android.app.Application;
 import android.content.Context;
 import android.shadow.*;
-import com.coofee.shadowapp.shadow.LocationManagerInterceptor;
-import com.coofee.shadowapp.shadow.TelephonyManagerInterceptor;
-import com.coofee.shadowapp.shadow.WifiManagerInterceptor;
+import com.coofee.shadowapp.shadow.location.ILocationManagerInterceptor;
+import com.coofee.shadowapp.shadow.telephony.IPhoneSubInfoInterceptor;
+import com.coofee.shadowapp.shadow.telephony.ITelephonyInterceptor;
+import com.coofee.shadowapp.shadow.wifi.IWifiManagerInterceptor;
 
 public class App extends Application {
 
@@ -23,16 +24,17 @@ public class App extends Application {
         if (BuildConfig.DEBUG) {
             ShadowLog.debug = true;
             shadowConfigBuilder.interceptAll(true).debug(true);
-            ShadowLog.e("debug or test, we will intercept all.");
+            ShadowLog.d("debug or test, we will intercept all.");
 
         } else {
             shadowConfigBuilder.interceptAll(false).debug(false);
         }
 
         shadowConfigBuilder
-                .add(new WifiManagerInterceptor())
-                .add(new TelephonyManagerInterceptor())
-                .add(new LocationManagerInterceptor())
+                .add(new IWifiManagerInterceptor())
+                .add(new ILocationManagerInterceptor())
+                .add(new ITelephonyInterceptor())
+                .add(new IPhoneSubInfoInterceptor())
         ;
 
         ShadowServiceManager.init(shadowConfigBuilder.build());

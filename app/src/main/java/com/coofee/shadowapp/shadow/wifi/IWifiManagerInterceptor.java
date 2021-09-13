@@ -1,4 +1,4 @@
-package com.coofee.shadowapp.shadow;
+package com.coofee.shadowapp.shadow.wifi;
 
 import android.app.Service;
 import android.shadow.ShadowLog;
@@ -9,7 +9,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class WifiManagerInterceptor implements ShadowServiceInterceptor {
+/**
+ * android.net.wifi.IWifiManager
+ */
+public class IWifiManagerInterceptor implements ShadowServiceInterceptor {
 
     private final Set<String> mInterceptMethodNames = new HashSet<>(Arrays.asList(
             "getConfiguredNetworks",
@@ -19,7 +22,7 @@ public class WifiManagerInterceptor implements ShadowServiceInterceptor {
 
     @Override
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
-        ShadowLog.e("WifiManagerInterceptor intercept method=" + method.getName());
+        ShadowLog.d("WifiManagerInterceptor intercept method=" + method.getName());
         return null;
     }
 

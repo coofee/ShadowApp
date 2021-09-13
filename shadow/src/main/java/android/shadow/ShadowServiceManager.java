@@ -32,16 +32,16 @@ public class ShadowServiceManager {
     }
 
     private static void intercept(ShadowConfig shadowConfig) {
-        ShadowLog.e("start intercept service...");
+        ShadowLog.d("start intercept service...");
         final String[] serviceNames = ServiceManagerBridge.listServices();
         final int serviceNameCount = serviceNames == null ? 0 : serviceNames.length;
         if (serviceNameCount < 1) {
-            ShadowLog.e("list service is empty.");
-            ShadowLog.e("end intercept service.");
+            ShadowLog.d("list service is empty.");
+            ShadowLog.d("end intercept service.");
             return;
         }
 
-        ShadowLog.e("service count=" + serviceNameCount);
+        ShadowLog.d("service count=" + serviceNameCount);
         final Map<String, ShadowServiceEntry> nameAndServiceMap = new LinkedHashMap<>(serviceNameCount);
         for (int i = 0; i < serviceNameCount; i++) {
             final String serviceName = serviceNames[i];
@@ -52,7 +52,7 @@ public class ShadowServiceManager {
             if (originService == null) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.CANNOT_GET_ORIGIN_SERVICE).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
-                ShadowLog.e("cannot get service; shadowServiceEntry=" + shadowServiceEntry);
+                ShadowLog.d("cannot get service; shadowServiceEntry=" + shadowServiceEntry);
                 continue;
             }
 
@@ -67,7 +67,7 @@ public class ShadowServiceManager {
             } catch (Throwable e) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.CANNOT_GET_INTERFACE_DESCRIPTOR).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
-                ShadowLog.e("cannot get service interface descriptor; shadowServiceEntry=" + shadowServiceEntry, e);
+                ShadowLog.d("cannot get service interface descriptor; shadowServiceEntry=" + shadowServiceEntry, e);
                 continue;
             }
 
@@ -78,7 +78,7 @@ public class ShadowServiceManager {
             } catch (Throwable e) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.CANNOT_LOAD_INTERFACE_CLASS).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
-                ShadowLog.e("cannot load service interface class; shadowServiceEntry=" + shadowServiceEntry, e);
+                ShadowLog.d("cannot load service interface class; shadowServiceEntry=" + shadowServiceEntry, e);
                 continue;
             }
 
@@ -89,7 +89,7 @@ public class ShadowServiceManager {
             } catch (Throwable e) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.CANNOT_LOAD_STUB_CLASS).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
-                ShadowLog.e("cannot load service stub class; shadowServiceEntry=" + shadowServiceEntry, e);
+                ShadowLog.d("cannot load service stub class; shadowServiceEntry=" + shadowServiceEntry, e);
                 continue;
             }
 
@@ -117,7 +117,7 @@ public class ShadowServiceManager {
             } catch (Throwable e) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.CANNOT_GET_ORIGIN_INTERFACE).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
-                ShadowLog.e("cannot get origin interface; shadowServiceEntry=" + shadowServiceEntry, e);
+                ShadowLog.d("cannot get origin interface; shadowServiceEntry=" + shadowServiceEntry, e);
                 continue;
             }
 
@@ -137,7 +137,7 @@ public class ShadowServiceManager {
             } catch (Throwable e) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.FAIL_CREATE_PROXY).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
-                ShadowLog.e("fail create proxy; shadowServiceEntry=" + shadowServiceEntry, e);
+                ShadowLog.d("fail create proxy; shadowServiceEntry=" + shadowServiceEntry, e);
             }
         }
 
@@ -153,13 +153,13 @@ public class ShadowServiceManager {
                 try {
                     serviceEntry.handler.add(shadowConfig.interceptorMap.get(serviceEntry.name));
                     serviceCache.put(serviceEntry.name, serviceEntry.proxyService);
-                    ShadowLog.e("success intercept service=" + serviceEntry.name);
+                    ShadowLog.d("success intercept service=" + serviceEntry.name);
                 } catch (Throwable e) {
                     ShadowLog.e("fail intercept service=" + serviceEntry.name, e);
                 }
             }
         }
 
-        ShadowLog.e("end intercept service.");
+        ShadowLog.d("end intercept service.");
     }
 }

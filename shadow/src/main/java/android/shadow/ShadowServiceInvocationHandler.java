@@ -51,7 +51,7 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
 
         if (interceptor.interceptAllMethod()) {
             if (mInterceptorRef.compareAndSet(null, interceptor)) {
-                ShadowLog.e("add interceptor=" + interceptor + " of service=" + mServiceName + ", and other interceptors=" + mInterceptMethodMap + " make no effect.");
+                ShadowLog.d("add interceptor=" + interceptor + " of service=" + mServiceName + ", and other interceptors=" + mInterceptMethodMap + " make no effect.");
                 return this;
             }
 
@@ -78,6 +78,8 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
                 ShadowLog.logThrow("service=" + mServiceName + " methodName=" + methodName +
                         " already have interceptor; prev=" + prev + ", new=" + interceptor);
             }
+
+            ShadowLog.d("add interceptor=" + interceptor + " of service=" + mServiceName + " for method=" + methodName);
         }
 
         return this;
@@ -91,11 +93,11 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
             final boolean intercept = shadowConfig.interceptAll || StackTraceUtil.invokeBy(shadowConfig.prefixSet);
 
             if (intercept) {
-                ShadowLog.e("intercept service=" + mServiceName + " all method by " + interceptor + ", current method=" + method);
+                ShadowLog.d("intercept service=" + mServiceName + " all method by " + interceptor + ", current method=" + method);
                 return interceptor.invoke(mServiceName, mOriginInterface, method, args);
             }
 
-            ShadowLog.e("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
+            ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
             return method.invoke(mOriginInterface, args);
         }
 
@@ -105,15 +107,15 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
             final boolean intercept = shadowConfig.interceptAll || StackTraceUtil.invokeBy(shadowConfig.prefixSet);
 
             if (intercept) {
-                ShadowLog.e("intercept service=" + mServiceName + " method=" + method + " by " + interceptor);
+                ShadowLog.d("intercept service=" + mServiceName + " method=" + method + " by " + interceptor);
                 return interceptor.invoke(mServiceName, mOriginInterface, method, args);
             }
 
-            ShadowLog.e("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
+            ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
             return method.invoke(mOriginInterface, args);
         }
 
-        ShadowLog.e("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
+        ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
         return method.invoke(mOriginInterface, args);
     }
 }

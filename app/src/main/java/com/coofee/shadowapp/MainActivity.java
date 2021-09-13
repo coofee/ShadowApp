@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
                 ShadowLog.e("touch file fail", e);
             }
             testActivity();
+
+            startActivity(new Intent(MainActivity.this, TestActivity.class));
         });
     }
 

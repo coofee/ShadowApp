@@ -1,4 +1,4 @@
-package com.coofee.shadowapp.shadow;
+package com.coofee.shadowapp.shadow.location;
 
 import android.app.Service;
 import android.shadow.ShadowLog;
@@ -9,15 +9,20 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class LocationManagerInterceptor implements ShadowServiceInterceptor {
+/**
+ * android.location.ILocationManager
+ */
+public class ILocationManagerInterceptor implements ShadowServiceInterceptor {
 
     private final Set<String> mInterceptMethodNames = new HashSet<>(Arrays.asList(
+            "getLastLocation",
+            "requestLocationUpdates",
             ""
     ));
 
     @Override
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
-        ShadowLog.e("TelephonyManagerInterceptor intercept method=" + method.getName());
+        ShadowLog.d("TelephonyManagerInterceptor intercept method=" + method.getName());
         return null;
     }
 
