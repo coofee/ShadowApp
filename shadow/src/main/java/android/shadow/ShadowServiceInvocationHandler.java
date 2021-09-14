@@ -3,7 +3,6 @@ package android.shadow;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,6 +86,11 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (ReflectUtil.isObjectMethod(method)) {
+            ShadowLog.d("invoke service=" + mServiceName + " object method=" + method + " by " + mOriginInterface);
+            return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
+        }
+
         ShadowServiceInterceptor interceptor = mInterceptorRef.get();
         if (interceptor != null) {
             final ShadowConfig shadowConfig = ShadowServiceManager.sShadowConfig;
@@ -94,11 +98,11 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
 
             if (intercept) {
                 ShadowLog.d("intercept service=" + mServiceName + " all method by " + interceptor + ", current method=" + method);
-                return interceptor.invoke(mServiceName, mOriginInterface, method, args);
+                return ReflectUtil.wrapReturnValue(interceptor.invoke(mServiceName, mOriginInterface, method, args), method.getReturnType());
             }
 
             ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
-            return method.invoke(mOriginInterface, args);
+            return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
         }
 
         interceptor = mInterceptMethodMap.get(method.getName());
@@ -108,14 +112,14 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
 
             if (intercept) {
                 ShadowLog.d("intercept service=" + mServiceName + " method=" + method + " by " + interceptor);
-                return interceptor.invoke(mServiceName, mOriginInterface, method, args);
+                return ReflectUtil.wrapReturnValue(interceptor.invoke(mServiceName, mOriginInterface, method, args), method.getReturnType());
             }
 
             ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
-            return method.invoke(mOriginInterface, args);
+            return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
         }
 
         ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
-        return method.invoke(mOriginInterface, args);
+        return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
     }
 }

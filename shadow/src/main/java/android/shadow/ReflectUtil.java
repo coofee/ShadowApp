@@ -6,6 +6,8 @@ import android.content.ContextWrapper;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class ReflectUtil {
     private static Field field_ContextWrapper_setBase = getContextWrapperSetBaseField();
@@ -64,5 +66,28 @@ public class ReflectUtil {
         } catch (Throwable e) {
             ShadowLog.e("fail printConstructor", e);
         }
+    }
+
+    private static final Map<Class<?>, Object> PRIMITIVE_TYPE_DEFAULT_VALUE_MAP = new HashMap<Class<?>, Object>() {
+        {
+            put(boolean.class, false);
+            put(byte.class, (byte) 0);
+            put(char.class, (char) 0);
+            put(short.class, (short) 0);
+            put(int.class, 0);
+            put(long.class, 0);
+            put(float.class, 0);
+            put(double.class, 0);
+        }
+    };
+
+    public static Object wrapReturnValue(Object returnValue, Class<?> returnType) {
+        return (returnValue == null ? PRIMITIVE_TYPE_DEFAULT_VALUE_MAP.get(returnType) : returnValue);
+    }
+
+    public static final Set<Method> OBJECT_METHODS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(Object.class.getDeclaredMethods())));
+
+    public static boolean isObjectMethod(Method method) {
+        return OBJECT_METHODS.contains(method);
     }
 }
