@@ -5,17 +5,21 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.shadow.ShadowLog;
+import android.shadow.*;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.coofee.shadowapp.test.TestLocationManager;
+import com.coofee.shadowapp.test.TestTelephonyManager;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.android.AndroidClassLoadingStrategy;
 import net.bytebuddy.dynamic.DynamicType;
@@ -26,9 +30,8 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.lang.reflect.Proxy;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
@@ -44,6 +47,12 @@ public class MainActivity extends AppCompatActivity {
         testActivity();
 
         testGetApplicationContext();
+
+        TestTelephonyManager.test(this);
+
+        TestLocationManager.test(this);
+
+        testObjectMethod();
 
 //        testShadowContext();
 
@@ -63,7 +72,54 @@ public class MainActivity extends AppCompatActivity {
             testActivity();
 
             startActivity(new Intent(MainActivity.this, TestActivity.class));
+
+            getSharedPreferences("my_sp", MODE_PRIVATE).edit()
+                    .putLong("last_open_time", System.currentTimeMillis())
+                    .commit();
         });
+    }
+
+    private void testObjectMethod() {
+        final ShadowServiceInterceptor testInterceptor = new ShadowServiceInterceptor() {
+
+            @Override
+            public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
+                return null;
+            }
+
+            @Override
+            public String provideInterceptServiceName() {
+                return "testInterceptor";
+            }
+
+            @Override
+            public Set<String> provideInterceptMethodNames() {
+                return new HashSet<>(Arrays.asList("testInterceptor"));
+            }
+
+            @Override
+            public boolean interceptAllMethod() {
+                return true;
+            }
+
+            @NonNull
+            @Override
+            public String toString() {
+                return "testInterceptor";
+            }
+
+            @Override
+            public int hashCode() {
+                return 90;
+            }
+        };
+
+        ShadowServiceInterceptor interceptorProxy = (ShadowServiceInterceptor) Proxy.newProxyInstance(this.getClassLoader(), new Class[]{ShadowServiceInterceptor.class}, new ShadowServiceInvocationHandler("testInterceptor", testInterceptor));
+        interceptorProxy.toString();
+        interceptorProxy.hashCode();
+        interceptorProxy.interceptAllMethod();
+        interceptorProxy.provideInterceptMethodNames();
+        interceptorProxy.provideInterceptServiceName();
     }
 
     private void exec(String command) {
@@ -264,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             LocationManager locationManager = (LocationManager) getApplicationContext().getSystemService(Service.LOCATION_SERVICE);
             ShadowLog.e("MainActivity.testGetApplicationContext; locationManager=" + locationManager);
-            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            ShadowLog.e("MainActivity.testGetApplicationContext; lastKnownLocation=" + locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
         } catch (Throwable e) {
             ShadowLog.e("fail testGetApplicationContext.getLastKnownLocation", e);
         }

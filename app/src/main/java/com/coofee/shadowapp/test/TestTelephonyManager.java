@@ -3,8 +3,10 @@ package com.coofee.shadowapp.test;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
+import android.shadow.ShadowServiceManager;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import androidx.annotation.NonNull;
 
 import java.lang.reflect.Method;
@@ -15,6 +17,8 @@ public class TestTelephonyManager {
 
     @SuppressLint({"NewApi", "HardwareIds", "MissingPermission", "DiscouragedPrivateApi"})
     public static void test(Context context) {
+        Log.d(ShadowServiceManager.TAG, "TestTelephonyManager.test");
+
         final TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE);
 
         // com.android.internal.telephony.ITelephony
