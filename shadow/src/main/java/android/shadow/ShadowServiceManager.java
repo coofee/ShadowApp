@@ -1,8 +1,10 @@
 package android.shadow;
 
 import android.os.IBinder;
+import android.os.IInterface;
 import android.os.ServiceManagerBridge;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.LinkedHashMap;
@@ -12,6 +14,8 @@ public class ShadowServiceManager {
     public static final String TAG = "ShadowServiceManager";
 
     static ShadowConfig sShadowConfig;
+
+    private static final Map<String, ShadowServiceEntry> sServiceEntryMap = new LinkedHashMap<>();
 
     public static void init(ShadowConfig shadowConfig) {
         sShadowConfig = shadowConfig;
@@ -29,6 +33,22 @@ public class ShadowServiceManager {
 
     public static ShadowConfig config() {
         return sShadowConfig;
+    }
+
+    public static ShadowService getShadowService(String service) {
+        ShadowServiceEntry serviceEntry = sServiceEntryMap.get(service);
+        if (serviceEntry != null && serviceEntry.state == ShadowServiceEntry.State.SUCCESS) {
+            return new ShadowService(serviceEntry);
+        }
+        return ShadowService.EMPTY;
+    }
+
+    public static Object getService(String service) {
+        ShadowServiceEntry serviceEntry = sServiceEntryMap.get(service);
+        if (serviceEntry != null && serviceEntry.state == ShadowServiceEntry.State.SUCCESS) {
+            return serviceEntry.proxyInterface;
+        }
+        return null;
     }
 
     private static void intercept(ShadowConfig shadowConfig) {
@@ -58,12 +78,15 @@ public class ShadowServiceManager {
 
             final String serviceInterfaceName;
             final String serviceStubName;
+            final String serviceStubProxyName;
             try {
                 serviceInterfaceName = originService.getInterfaceDescriptor();
                 serviceStubName = serviceInterfaceName + "$Stub";
+                serviceStubProxyName = serviceStubName + "$Proxy";
                 serviceEntryBuilder.interfaceDescriptor(serviceInterfaceName)
                         .interfaceClassName(serviceInterfaceName)
-                        .stubClassName(serviceStubName);
+                        .stubClassName(serviceStubName)
+                        .stubProxyClassName(serviceStubProxyName);
             } catch (Throwable e) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.CANNOT_GET_INTERFACE_DESCRIPTOR).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
@@ -83,9 +106,13 @@ public class ShadowServiceManager {
             }
 
             final Class<?> serviceStubClass;
+            final Class<?> serviceStubProxyClass;
             try {
                 serviceStubClass = Class.forName(serviceStubName);
                 serviceEntryBuilder.stubClass(serviceStubClass);
+
+                serviceStubProxyClass = Class.forName(serviceStubProxyName);
+                serviceEntryBuilder.stubProxyClass(serviceStubProxyClass);
             } catch (Throwable e) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.CANNOT_LOAD_STUB_CLASS).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
@@ -105,11 +132,24 @@ public class ShadowServiceManager {
 //                    }
 //                }
 
-            final Object originInterface;
+            Object originInterface = null;
             try {
-                Method method_asInterface = serviceStubClass.getDeclaredMethod("asInterface", IBinder.class);
-                method_asInterface.setAccessible(true);
-                originInterface = method_asInterface.invoke(null, originService);
+                try {
+                    Method method_asInterface = serviceStubClass.getDeclaredMethod("asInterface", IBinder.class);
+                    method_asInterface.setAccessible(true);
+                    originInterface = method_asInterface.invoke(null, originService);
+                } catch (NoSuchMethodException e) {
+                    IInterface iInterface = originService.queryLocalInterface(serviceInterfaceName);
+                    if (iInterface != null && serviceInterfaceClass.isInstance(iInterface)) {
+                        originInterface = iInterface;
+                    } else {
+                        ReflectUtil.print(serviceStubProxyClass);
+                        Constructor<?> constructor = serviceStubProxyClass.getDeclaredConstructor(IBinder.class);
+                        constructor.setAccessible(true);
+                        originInterface = constructor.newInstance(originService);
+                    }
+                }
+
                 if (originInterface == null) {
                     throw new NullPointerException("originInterface is null");
                 }
@@ -153,7 +193,7 @@ public class ShadowServiceManager {
                 try {
                     serviceEntry.handler.add(shadowConfig.interceptorMap.get(serviceEntry.name));
                     serviceCache.put(serviceEntry.name, serviceEntry.proxyService);
-                    ShadowLog.d("success intercept service=" + serviceEntry.name);
+                    ShadowLog.d("success intercept service=" + serviceEntry.name + ", serviceEntry=" + serviceEntry);
                 } catch (Throwable e) {
                     ShadowLog.e("fail intercept service=" + serviceEntry.name, e);
                 }
@@ -161,5 +201,7 @@ public class ShadowServiceManager {
         }
 
         ShadowLog.d("end intercept service.");
+
+        sServiceEntryMap.putAll(nameAndServiceMap);
     }
 }

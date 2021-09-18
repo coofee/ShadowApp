@@ -50,7 +50,7 @@ public class ShadowLog {
 
     public static void d(String msg, Throwable e) {
         if (debug || ShadowServiceManager.debug()) {
-            sLogImpl.d(ShadowServiceManager.TAG, msg);
+            sLogImpl.d(ShadowServiceManager.TAG, msg, e);
         }
     }
 

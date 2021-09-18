@@ -38,16 +38,38 @@ public class ShadowServiceEntry {
     public final String interfaceDescriptor;
     public final String interfaceClassName;
     public final String stubClassName;
+    public final String stubProxyClassName;
 
     public final Class<?> interfaceClass;
     public final Class<?> stubClass;
+    public final Class<?> stubProxyClass;
 
     public final Object originInterface;
     public final Object proxyInterface;
 
     public final ShadowServiceInvocationHandler handler;
 
-    public ShadowServiceEntry(String name, State state, IBinder originService, IBinder proxyService, String interfaceDescriptor, String interfaceClassName, String stubClassName, Class<?> interfaceClass, Class<?> stubClass, Object originInterface, Object proxyInterface, ShadowServiceInvocationHandler handler) {
+    public ShadowServiceEntry(
+            String name,
+            State state,
+
+            IBinder originService,
+            IBinder proxyService,
+
+            String interfaceDescriptor,
+            String interfaceClassName,
+            String stubClassName,
+            String stubProxyClassName,
+
+            Class<?> interfaceClass,
+            Class<?> stubClass,
+            Class<?> stubProxyClass,
+
+            Object originInterface,
+            Object proxyInterface,
+
+            ShadowServiceInvocationHandler handler
+    ) {
         this.name = name;
 
         this.state = state;
@@ -58,9 +80,11 @@ public class ShadowServiceEntry {
         this.interfaceDescriptor = interfaceDescriptor;
         this.interfaceClassName = interfaceClassName;
         this.stubClassName = stubClassName;
+        this.stubProxyClassName = stubProxyClassName;
 
         this.interfaceClass = interfaceClass;
         this.stubClass = stubClass;
+        this.stubProxyClass = stubProxyClass;
 
         this.originInterface = originInterface;
         this.proxyInterface = proxyInterface;
@@ -83,9 +107,11 @@ public class ShadowServiceEntry {
         public String interfaceDescriptor;
         public String interfaceClassName;
         public String stubClassName;
+        public String stubProxyClassName;
 
         public Class<?> interfaceClass;
         public Class<?> stubClass;
+        public Class<?> stubProxyClass;
 
         public Object originInterface;
         public Object proxyInterface;
@@ -107,9 +133,11 @@ public class ShadowServiceEntry {
             this.interfaceDescriptor = serviceEntry.interfaceDescriptor;
             this.interfaceClassName = serviceEntry.interfaceClassName;
             this.stubClassName = serviceEntry.stubClassName;
+            this.stubProxyClassName = serviceEntry.stubProxyClassName;
 
             this.interfaceClass = serviceEntry.interfaceClass;
             this.stubClass = serviceEntry.stubClass;
+            this.stubProxyClass = serviceEntry.stubProxyClass;
 
             this.originInterface = serviceEntry.originInterface;
             this.proxyInterface = serviceEntry.proxyInterface;
@@ -147,6 +175,11 @@ public class ShadowServiceEntry {
             return this;
         }
 
+        public Builder stubProxyClassName(String stubProxyClassName) {
+            this.stubProxyClassName = stubProxyClassName;
+            return this;
+        }
+
         public Builder interfaceClass(Class<?> interfaceClass) {
             this.interfaceClass = interfaceClass;
             return this;
@@ -154,6 +187,11 @@ public class ShadowServiceEntry {
 
         public Builder stubClass(Class<?> stubClass) {
             this.stubClass = stubClass;
+            return this;
+        }
+
+        public Builder stubProxyClass(Class<?> stubProxyClass) {
+            this.stubProxyClass = stubProxyClass;
             return this;
         }
 
@@ -173,7 +211,26 @@ public class ShadowServiceEntry {
         }
 
         public ShadowServiceEntry build() {
-            return new ShadowServiceEntry(name, state, originService, proxyService, interfaceDescriptor, interfaceClassName, stubClassName, interfaceClass, stubClass, originInterface, proxyInterface, handler);
+            return new ShadowServiceEntry(
+                    name,
+                    state,
+
+                    originService,
+                    proxyService,
+
+                    interfaceDescriptor,
+                    interfaceClassName,
+                    stubClassName,
+                    stubProxyClassName,
+
+                    interfaceClass,
+                    stubClass,
+                    stubProxyClass,
+
+                    originInterface,
+                    proxyInterface,
+                    handler
+            );
         }
 
     }
@@ -196,12 +253,18 @@ public class ShadowServiceEntry {
             return false;
         if (stubClassName != null ? !stubClassName.equals(that.stubClassName) : that.stubClassName != null)
             return false;
+        if (stubProxyClassName != null ? !stubProxyClassName.equals(that.stubProxyClassName) : that.stubProxyClassName != null)
+            return false;
         if (interfaceClass != null ? !interfaceClass.equals(that.interfaceClass) : that.interfaceClass != null)
             return false;
         if (stubClass != null ? !stubClass.equals(that.stubClass) : that.stubClass != null) return false;
+        if (stubProxyClass != null ? !stubProxyClass.equals(that.stubProxyClass) : that.stubProxyClass != null)
+            return false;
         if (originInterface != null ? !originInterface.equals(that.originInterface) : that.originInterface != null)
             return false;
-        return proxyInterface != null ? proxyInterface.equals(that.proxyInterface) : that.proxyInterface == null;
+        if (proxyInterface != null ? !proxyInterface.equals(that.proxyInterface) : that.proxyInterface != null)
+            return false;
+        return handler != null ? handler.equals(that.handler) : that.handler == null;
     }
 
     @Override
@@ -213,10 +276,13 @@ public class ShadowServiceEntry {
         result = 31 * result + (interfaceDescriptor != null ? interfaceDescriptor.hashCode() : 0);
         result = 31 * result + (interfaceClassName != null ? interfaceClassName.hashCode() : 0);
         result = 31 * result + (stubClassName != null ? stubClassName.hashCode() : 0);
+        result = 31 * result + (stubProxyClassName != null ? stubProxyClassName.hashCode() : 0);
         result = 31 * result + (interfaceClass != null ? interfaceClass.hashCode() : 0);
         result = 31 * result + (stubClass != null ? stubClass.hashCode() : 0);
+        result = 31 * result + (stubProxyClass != null ? stubProxyClass.hashCode() : 0);
         result = 31 * result + (originInterface != null ? originInterface.hashCode() : 0);
         result = 31 * result + (proxyInterface != null ? proxyInterface.hashCode() : 0);
+        result = 31 * result + (handler != null ? handler.hashCode() : 0);
         return result;
     }
 
@@ -230,10 +296,13 @@ public class ShadowServiceEntry {
                 ", interfaceDescriptor='" + interfaceDescriptor + '\'' +
                 ", interfaceClassName='" + interfaceClassName + '\'' +
                 ", stubClassName='" + stubClassName + '\'' +
+                ", stubProxyClassName='" + stubProxyClassName + '\'' +
                 ", interfaceClass=" + interfaceClass +
                 ", stubClass=" + stubClass +
+                ", stubProxyClass=" + stubProxyClass +
                 ", originInterface=" + originInterface +
                 ", proxyInterface=" + proxyInterface +
+                ", handler=" + handler +
                 '}';
     }
 }

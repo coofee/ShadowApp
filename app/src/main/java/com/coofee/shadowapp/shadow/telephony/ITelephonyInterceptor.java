@@ -43,24 +43,24 @@ public class ITelephonyInterceptor implements ShadowServiceInterceptor {
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
         ShadowLog.d("ITelephonyInterceptor intercept method=" + method.getName());
 
-        final String name = method.getName();
-        if ("getCellLocation".equals(name) || "getAllCellInfo".equals(name)) {
-            // 禁止后台定位
-            if (App.isBackground()) {
-                return null;
-            }
+//        final String name = method.getName();
+//        if ("getCellLocation".equals(name) || "getAllCellInfo".equals(name)) {
+//            // 禁止后台定位
+//            if (App.isBackground()) {
+//                return null;
+//            }
+//
+//            // 前台时，有权限再执行;
+//            if (ContextCompat.checkSelfPermission(App.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                return method.invoke(service, args);
+//            }
+//        }
+//
+//        if (ContextCompat.checkSelfPermission(App.getContext(), Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+//            return method.invoke(service, args);
+//        }
 
-            // 前台时，有权限再执行;
-            if (ContextCompat.checkSelfPermission(App.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                return method.invoke(service, args);
-            }
-        }
-
-        if (ContextCompat.checkSelfPermission(App.getContext(), Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
-            return method.invoke(service, args);
-        }
-
-        return null;
+        return method.invoke(service, args);
     }
 
     @Override
@@ -71,5 +71,10 @@ public class ITelephonyInterceptor implements ShadowServiceInterceptor {
     @Override
     public Set<String> provideInterceptMethodNames() {
         return mInterceptMethodNames;
+    }
+
+    @Override
+    public boolean interceptAllMethod() {
+        return true;
     }
 }

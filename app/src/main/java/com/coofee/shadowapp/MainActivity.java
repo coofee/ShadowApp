@@ -4,20 +4,23 @@ import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.shadow.*;
+import android.shadow.ShadowLog;
+import android.shadow.ShadowServiceInterceptor;
+import android.shadow.ShadowServiceInvocationHandler;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+//import com.coofee.shadowapp.test.OsUtil;
 import com.coofee.shadowapp.test.TestLocationManager;
 import com.coofee.shadowapp.test.TestTelephonyManager;
 import net.bytebuddy.ByteBuddy;
@@ -61,21 +64,62 @@ public class MainActivity extends AppCompatActivity {
 //        testPackageManager();
 
         findViewById(R.id.replace_package_manager).setOnClickListener(view -> {
-//            testPackageManager();
+            testPackageManager();
+
+            String classFullName = MainActivity.class.getName();
+            String classPath = classFullName.replace('.', '/') + ".class";
+            InputStream resourceAsStream = MainActivity.this.getClassLoader().getResourceAsStream(classPath);
             try {
-                String s = UUID.randomUUID().toString().replace("-", "");
-                File file = new File("/data/local/tmp/", s);
-                exec("touch " + file.getAbsolutePath());
-            } catch (Throwable e) {
-                ShadowLog.e("touch file fail", e);
+                File classFile = new File(getExternalCacheDir(), classFullName);
+                boolean copy = Util.copy(resourceAsStream, new FileOutputStream(classFile));
+                ShadowLog.e("copy to " + classFile + " success? " + copy);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
+
+            TestLocationManager.test(this);
+
+//            Object providerProperties = ShadowServiceManager.getShadowService(Service.LOCATION_SERVICE)
+//                    .method("getLast", String.class)
+//                    .invoke(LocationManager.GPS_PROVIDER);
+//            ShadowLog.e("get locationProvider=" + providerProperties + " by shadow service.");
+
+//            try {
+//                String s = UUID.randomUUID().toString().replace("-", "");
+//                File file = new File("/data/local/tmp/", s);
+//                exec("touch " + file.getAbsolutePath());
+//            } catch (Throwable e) {
+//                ShadowLog.e("touch file fail", e);
+//            }
             testActivity();
 
             startActivity(new Intent(MainActivity.this, TestActivity.class));
 
-            getSharedPreferences("my_sp", MODE_PRIVATE).edit()
-                    .putLong("last_open_time", System.currentTimeMillis())
-                    .commit();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Set<String> classBy = Util.findClassBy(getPackageCodePath(), className -> className.startsWith("com.coofee.shadowapp.shadow"));
+                    ShadowLog.e("findClassBy; find all class=" + classBy);
+
+//                    OsUtil.replaceOsByInvocationHandler();
+                    getSharedPreferences("my_sp", MODE_PRIVATE).edit()
+                            .putLong("last_open_time", System.currentTimeMillis())
+                            .commit();
+                }
+            }).start();
+        });
+
+        findViewById(R.id.replace_os).setOnClickListener(v -> {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+//                    OsUtil.replaceOsByInvocationHandler();
+                    getSharedPreferences("my_sp", MODE_PRIVATE).edit()
+                            .putLong("last_open_time", System.currentTimeMillis())
+                            .commit();
+                }
+            }).start();
         });
     }
 
@@ -175,6 +219,10 @@ public class MainActivity extends AppCompatActivity {
                 ", class=" + packageManager.getClass() +
                 ", superClass=" + packageManager.getClass().getSuperclass() +
                 ", interfaces=" + Arrays.toString(packageManager.getClass().getInterfaces()));
+
+        List<PackageInfo> installedPackages = getPackageManager().getInstalledPackages(0);
+        List<ApplicationInfo> installedApplications = getPackageManager().getInstalledApplications(0);
+        ShadowLog.e("MainActivity.testPackageManager(); installedPackages=" + installedPackages + ", installedApplications=" + installedApplications);
 
         try {
             Class<?> class_ApplicationPackageManager = Class.forName("android.app.ApplicationPackageManager");

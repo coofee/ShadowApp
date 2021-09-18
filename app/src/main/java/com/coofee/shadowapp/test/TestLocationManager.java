@@ -11,6 +11,7 @@ import android.shadow.ShadowServiceManager;
 import android.util.Log;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class TestLocationManager {
     @SuppressLint("MissingPermission")
@@ -19,6 +20,13 @@ public class TestLocationManager {
         LocationManager locationManager = (LocationManager) context.getSystemService(Service.LOCATION_SERVICE);
 
         TestUtil.exec(() -> locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
+
+        TestUtil.exec(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return locationManager.getProvider(LocationManager.GPS_PROVIDER);
+            }
+        });
 
 
         List<String> allProviders = locationManager.getAllProviders();

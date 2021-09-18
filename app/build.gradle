@@ -3,13 +3,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.coofee.shadowapp"
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -35,7 +34,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     implementation 'androidx.lifecycle:lifecycle-process:2.3.1'
 
-//    implementation 'com.github.tiann:FreeReflection:3.1.0'
+    implementation 'com.github.tiann:FreeReflection:3.1.0'
     implementation project(':shadow')
 
     // https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy-android
