@@ -108,7 +108,7 @@ public class App extends Application {
                 Object permissionmgr = ShadowServiceManager.getService("permissionmgr");
                 if (permissionmgr != null) {
                     ShadowLog.e("originPermissionManager=" + originPackageManager + ", permissionmgr=" + permissionmgr);
-                    field_sPackageManager.set(null, permissionmgr);
+                    field_sPermissionManager.set(null, permissionmgr);
                 }
             }
         } catch (Throwable e) {

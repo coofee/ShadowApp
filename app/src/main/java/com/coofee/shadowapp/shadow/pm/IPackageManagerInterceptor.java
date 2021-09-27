@@ -12,12 +12,12 @@ public class IPackageManagerInterceptor implements ShadowServiceInterceptor {
     @Override
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
         ShadowLog.d("IPackageManagerInterceptor intercept method=" + method + ", args=" + Arrays.toString(args));
-        return null;
+        return method.invoke(service, args);
     }
 
     @Override
     public String provideInterceptServiceName() {
-        return null;
+        return "package";
     }
 
     @Override

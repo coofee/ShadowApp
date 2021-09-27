@@ -1,6 +1,7 @@
 package android.shadow;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
@@ -86,40 +87,45 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (ReflectUtil.isObjectMethod(method)) {
-            ShadowLog.d("invoke service=" + mServiceName + " object method=" + method + " by " + mOriginInterface);
-            return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
-        }
+        try {
+            if (ReflectUtil.isObjectMethod(method)) {
+                ShadowLog.d("invoke service=" + mServiceName + " object method=" + method + " by " + mOriginInterface);
+                return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
+            }
 
+            ShadowServiceInterceptor interceptor = getInterceptor(method);
+            if (interceptor == null) {
+                ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
+                return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
+            } else {
+                return ReflectUtil.wrapReturnValue(interceptor.invoke(mServiceName, mOriginInterface, method, args), method.getReturnType());
+            }
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
+    }
+
+    private ShadowServiceInterceptor getInterceptor(Method method) {
         ShadowServiceInterceptor interceptor = mInterceptorRef.get();
         if (interceptor != null) {
             final ShadowConfig shadowConfig = ShadowServiceManager.sShadowConfig;
             final boolean intercept = shadowConfig.interceptAll || StackTraceUtil.invokeBy(shadowConfig.prefixSet);
-
             if (intercept) {
                 ShadowLog.d("intercept service=" + mServiceName + " all method by " + interceptor + ", current method=" + method);
-                return ReflectUtil.wrapReturnValue(interceptor.invoke(mServiceName, mOriginInterface, method, args), method.getReturnType());
             }
-
-            ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
-            return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
+            return interceptor;
         }
 
         interceptor = mInterceptMethodMap.get(method.getName());
         if (interceptor != null) {
             final ShadowConfig shadowConfig = ShadowServiceManager.sShadowConfig;
             final boolean intercept = shadowConfig.interceptAll || StackTraceUtil.invokeBy(shadowConfig.prefixSet);
-
             if (intercept) {
                 ShadowLog.d("intercept service=" + mServiceName + " method=" + method + " by " + interceptor);
-                return ReflectUtil.wrapReturnValue(interceptor.invoke(mServiceName, mOriginInterface, method, args), method.getReturnType());
             }
-
-            ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
-            return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
+            return interceptor;
         }
 
-        ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
-        return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
+        return null;
     }
 }

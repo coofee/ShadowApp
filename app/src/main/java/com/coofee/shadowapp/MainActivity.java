@@ -20,7 +20,7 @@ import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-//import com.coofee.shadowapp.test.OsUtil;
+import com.coofee.shadowapp.test.OsUtil;
 import com.coofee.shadowapp.test.TestLocationManager;
 import com.coofee.shadowapp.test.TestTelephonyManager;
 import net.bytebuddy.ByteBuddy;
@@ -30,10 +30,7 @@ import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.Executors;
 
@@ -114,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-//                    OsUtil.replaceOsByInvocationHandler();
+                    OsUtil.replaceOsByInvocationHandler();
                     getSharedPreferences("my_sp", MODE_PRIVATE).edit()
                             .putLong("last_open_time", System.currentTimeMillis())
                             .commit();
@@ -248,15 +245,19 @@ public class MainActivity extends AppCompatActivity {
                     .intercept(InvocationHandlerAdapter.of(new InvocationHandler() {
                         @Override
                         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                            String name = method.getName();
-                            ShadowLog.e("MainActivity.testPackageManager; access " + name);
-                            switch (name) {
-                                case "getInstalledPackages":
-                                    return null;
-                                case "getInstalledApplications":
-                                    return null;
-                                default:
-                                    return method.invoke(packageManager, args);
+                            try {
+                                String name = method.getName();
+                                ShadowLog.e("MainActivity.testPackageManager; access " + name);
+                                switch (name) {
+                                    case "getInstalledPackages":
+                                        return null;
+                                    case "getInstalledApplications":
+                                        return null;
+                                    default:
+                                        return method.invoke(packageManager, args);
+                                }
+                            } catch (InvocationTargetException e) {
+                                throw e.getCause();
                             }
                         }
                     }))
