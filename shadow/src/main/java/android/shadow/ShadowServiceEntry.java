@@ -33,6 +33,7 @@ public class ShadowServiceEntry {
     public final State state;
 
     public final IBinder originService;
+    public final IBinder originServiceWrapper;
     public final IBinder proxyService;
 
     public final String interfaceDescriptor;
@@ -54,6 +55,7 @@ public class ShadowServiceEntry {
             State state,
 
             IBinder originService,
+            IBinder originServiceWrapper,
             IBinder proxyService,
 
             String interfaceDescriptor,
@@ -75,6 +77,7 @@ public class ShadowServiceEntry {
         this.state = state;
 
         this.originService = originService;
+        this.originServiceWrapper = originServiceWrapper;
         this.proxyService = proxyService;
 
         this.interfaceDescriptor = interfaceDescriptor;
@@ -102,6 +105,7 @@ public class ShadowServiceEntry {
         public State state = State.UNKNOWN;
 
         public IBinder originService;
+        public IBinder originServiceWrapper;
         public IBinder proxyService;
 
         public String interfaceDescriptor;
@@ -128,6 +132,7 @@ public class ShadowServiceEntry {
             this.state = serviceEntry.state;
 
             this.originService = serviceEntry.originService;
+            this.originServiceWrapper = serviceEntry.originServiceWrapper;
             this.proxyService = serviceEntry.proxyService;
 
             this.interfaceDescriptor = serviceEntry.interfaceDescriptor;
@@ -152,6 +157,11 @@ public class ShadowServiceEntry {
 
         public Builder originService(IBinder originService) {
             this.originService = originService;
+            return this;
+        }
+
+        public Builder originServiceWrapper(IBinder originServiceWrapper) {
+            this.originServiceWrapper = originServiceWrapper;
             return this;
         }
 
@@ -216,6 +226,7 @@ public class ShadowServiceEntry {
                     state,
 
                     originService,
+                    originServiceWrapper,
                     proxyService,
 
                     interfaceDescriptor,
@@ -246,6 +257,8 @@ public class ShadowServiceEntry {
         if (state != that.state) return false;
         if (originService != null ? !originService.equals(that.originService) : that.originService != null)
             return false;
+        if (originServiceWrapper != null ? !originServiceWrapper.equals(that.originServiceWrapper) : that.originServiceWrapper != null)
+            return false;
         if (proxyService != null ? !proxyService.equals(that.proxyService) : that.proxyService != null) return false;
         if (interfaceDescriptor != null ? !interfaceDescriptor.equals(that.interfaceDescriptor) : that.interfaceDescriptor != null)
             return false;
@@ -272,6 +285,7 @@ public class ShadowServiceEntry {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (state != null ? state.hashCode() : 0);
         result = 31 * result + (originService != null ? originService.hashCode() : 0);
+        result = 31 * result + (originServiceWrapper != null ? originServiceWrapper.hashCode() : 0);
         result = 31 * result + (proxyService != null ? proxyService.hashCode() : 0);
         result = 31 * result + (interfaceDescriptor != null ? interfaceDescriptor.hashCode() : 0);
         result = 31 * result + (interfaceClassName != null ? interfaceClassName.hashCode() : 0);
@@ -292,6 +306,7 @@ public class ShadowServiceEntry {
                 "name='" + name + '\'' +
                 ", state=" + state +
                 ", originService=" + originService +
+                ", originServiceWrapper=" + originServiceWrapper +
                 ", proxyService=" + proxyService +
                 ", interfaceDescriptor='" + interfaceDescriptor + '\'' +
                 ", interfaceClassName='" + interfaceClassName + '\'' +

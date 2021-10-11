@@ -4,9 +4,7 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.ServiceManagerBridge;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -68,7 +66,6 @@ public class ShadowServiceManager {
             final ShadowServiceEntry.Builder serviceEntryBuilder = new ShadowServiceEntry.Builder(serviceName);
 
             final IBinder originService = ServiceManagerBridge.getService(serviceName);
-            serviceEntryBuilder.originService(originService);
             if (originService == null) {
                 ShadowServiceEntry shadowServiceEntry = serviceEntryBuilder.state(ShadowServiceEntry.State.CANNOT_GET_ORIGIN_SERVICE).build();
                 nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
@@ -76,11 +73,15 @@ public class ShadowServiceManager {
                 continue;
             }
 
+            serviceEntryBuilder.originService(originService);
+            final IBinder originServiceWrapper = (IBinder) Proxy.newProxyInstance(originService.getClass().getClassLoader(), new Class[]{IBinder.class}, new ShadowIBinderInvocationHandler(serviceName, originService));
+            serviceEntryBuilder.originServiceWrapper(originServiceWrapper);
+
             final String serviceInterfaceName;
             final String serviceStubName;
             final String serviceStubProxyName;
             try {
-                serviceInterfaceName = originService.getInterfaceDescriptor();
+                serviceInterfaceName = originServiceWrapper.getInterfaceDescriptor();
                 serviceStubName = serviceInterfaceName + "$Stub";
                 serviceStubProxyName = serviceStubName + "$Proxy";
                 serviceEntryBuilder.interfaceDescriptor(serviceInterfaceName)
@@ -137,16 +138,16 @@ public class ShadowServiceManager {
                 try {
                     Method method_asInterface = serviceStubClass.getDeclaredMethod("asInterface", IBinder.class);
                     method_asInterface.setAccessible(true);
-                    originInterface = method_asInterface.invoke(null, originService);
+                    originInterface = method_asInterface.invoke(null, originServiceWrapper);
                 } catch (NoSuchMethodException e) {
-                    IInterface iInterface = originService.queryLocalInterface(serviceInterfaceName);
+                    IInterface iInterface = originServiceWrapper.queryLocalInterface(serviceInterfaceName);
                     if (iInterface != null && serviceInterfaceClass.isInstance(iInterface)) {
                         originInterface = iInterface;
                     } else {
                         ReflectUtil.print(serviceStubProxyClass);
                         Constructor<?> constructor = serviceStubProxyClass.getDeclaredConstructor(IBinder.class);
                         constructor.setAccessible(true);
-                        originInterface = constructor.newInstance(originService);
+                        originInterface = constructor.newInstance(originServiceWrapper);
                     }
                 }
 
@@ -165,9 +166,7 @@ public class ShadowServiceManager {
                 final ClassLoader classLoader = originService.getClass().getClassLoader();
                 final ShadowServiceInvocationHandler handler = new ShadowServiceInvocationHandler(serviceName, originInterface);
                 final Object proxyInterface = Proxy.newProxyInstance(classLoader, new Class[]{serviceInterfaceClass}, handler);
-                final IBinder proxyService = (IBinder) Proxy.newProxyInstance(classLoader, new Class[]{IBinder.class},
-                        (proxy, method, args) -> "queryLocalInterface".equals(method.getName()) ? proxyInterface : method.invoke(originService, args)
-                );
+                final IBinder proxyService = (IBinder) Proxy.newProxyInstance(classLoader, new Class[]{IBinder.class}, new ShadowIBinderInvocationHandler(serviceName, originServiceWrapper, proxyInterface));
                 final ShadowServiceEntry serviceEntry = serviceEntryBuilder.proxyService(proxyService)
                         .proxyInterface(proxyInterface)
                         .handler(handler)

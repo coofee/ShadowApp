@@ -10,9 +10,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.SystemClock;
+import android.os.*;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceInterceptor;
 import android.shadow.ShadowServiceInvocationHandler;
@@ -30,8 +28,12 @@ import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 
 import java.io.*;
+import java.lang.Process;
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,6 +43,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 //        android.os.Debug.waitForDebugger();
         setContentView(R.layout.activity_main);
+
+        try {
+            Method setAppTracingAllowed = Trace.class.getDeclaredMethod("setAppTracingAllowed", boolean.class);
+            setAppTracingAllowed.setAccessible(true);
+            setAppTracingAllowed.invoke(null, true);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        Trace.beginSection("MainActivity.onCreate");
 
         testClassLoader();
 
@@ -118,6 +130,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             }).start();
         });
+
+        findViewById(R.id.test_TransactionTooLargeException).setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, TestActivity.class);
+            intent.putExtra("bytes_too_large", new byte[1024 * 1024]);
+            Parcel parcel = Parcel.obtain();
+            parcel.writeParcelable(intent, 0);
+            ShadowLog.e("dataSize=" + parcel.dataSize());
+            parcel.recycle();
+            startActivity(intent);
+        });
+
+        Trace.endSection();
     }
 
     private void testObjectMethod() {

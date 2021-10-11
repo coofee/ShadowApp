@@ -14,7 +14,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Replace Package Manager"
-            android:textSize="25dp"
+            android:textSize="20dp"
+            android:textAllCaps="false"
 
     />
 
@@ -23,7 +24,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Replace OS"
-            android:textSize="25dp"
+            android:textSize="20dp"
+            android:textAllCaps="false"
+    />
+
+    <Button
+            android:id="@+id/test_TransactionTooLargeException"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test TransactionTooLargeException"
+            android:textSize="20dp"
+            android:textAllCaps="false"
     />
 
 </LinearLayout>
