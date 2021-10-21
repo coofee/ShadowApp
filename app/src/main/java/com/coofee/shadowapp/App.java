@@ -32,6 +32,9 @@ public class App extends Application {
         // readelf -a frida-gadget-15.1.6-android-arm64.so | grep NAME
         // readelf -a frida-gadget-15.1.6-android-arm64.so | grep NEED
         // logcat TAG: Frida
+        // clone PythonStudy 仓库获取代码，链接该程序进行测试。
+        // $ python3 frida_shadow_test.py
+        // $ frida -U Gadget -l frida_hook.js
         System.loadLibrary("frida-gadget");
 
         sContext = this;
