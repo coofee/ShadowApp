@@ -2,7 +2,6 @@ package com.coofee.shadowapp;
 
 import android.app.Application;
 import android.content.Context;
-import android.shadow.ReflectUtil;
 import android.shadow.ShadowConfig;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceManager;
@@ -21,8 +20,6 @@ import com.coofee.shadowapp.shadow.telephony.ITelephonyInterceptor;
 import com.coofee.shadowapp.shadow.wifi.IWifiManagerInterceptor;
 import me.weishu.reflection.Reflection;
 
-import java.lang.reflect.Field;
-
 public class App extends Application {
 
     private static Context sContext;
@@ -32,8 +29,13 @@ public class App extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        initShadowManager(base);
+        // readelf -a frida-gadget-15.1.6-android-arm64.so | grep NAME
+        // readelf -a frida-gadget-15.1.6-android-arm64.so | grep NEED
+        // logcat TAG: Frida
+        System.loadLibrary("frida-gadget");
+
         sContext = this;
+        initShadowManager(base);
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifecycleObserver() {
 
             @OnLifecycleEvent(Lifecycle.Event.ON_START)
@@ -86,35 +88,6 @@ public class App extends Application {
         ;
 
         ShadowServiceManager.init(shadowConfigBuilder.build());
-
-
-        try {
-            Class<?> class_ActivityThread = Class.forName("android.app.ActivityThread");
-            Field field_sPackageManager = class_ActivityThread.getDeclaredField("sPackageManager");
-            field_sPackageManager.setAccessible(true);
-            Object originPackageManager = field_sPackageManager.get(null);
-            if (originPackageManager != null) {
-                Object packageManager = ShadowServiceManager.getService("package");
-                if (packageManager != null) {
-                    ShadowLog.e("originPackageManager=" + originPackageManager + ", packageManager=" + packageManager);
-                    field_sPackageManager.set(null, packageManager);
-                }
-            }
-
-            Field field_sPermissionManager = class_ActivityThread.getDeclaredField("sPermissionManager");
-            field_sPermissionManager.setAccessible(true);
-            Object originPermissionManager = field_sPermissionManager.get(null);
-            if (originPermissionManager != null) {
-                Object permissionmgr = ShadowServiceManager.getService("permissionmgr");
-                if (permissionmgr != null) {
-                    ShadowLog.e("originPermissionManager=" + originPackageManager + ", permissionmgr=" + permissionmgr);
-                    field_sPermissionManager.set(null, permissionmgr);
-                }
-            }
-        } catch (Throwable e) {
-            ShadowLog.e("fail replace sPackageManager or sPermissionManager", e);
-        }
-
     }
 
 }

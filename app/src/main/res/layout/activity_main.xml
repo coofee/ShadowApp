@@ -37,4 +37,13 @@
             android:textAllCaps="false"
     />
 
+    <Button
+            android:id="@+id/test_replace_Runtime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test replace Runtime"
+            android:textSize="20dp"
+            android:textAllCaps="false"
+    />
+
 </LinearLayout>

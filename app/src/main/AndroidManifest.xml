@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
             android:name=".App"
             android:allowBackup="true"
@@ -17,6 +20,7 @@
 
         <service
                 android:name=".TestIntentService"
+                android:process=":sub"
                 android:exported="false">
         </service>
 
@@ -27,6 +31,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <provider
+                android:name="com.coofee.shadowapp.test.BinderProvider"
+                android:authorities="com.coofee.shadowapp.test.BinderProvider"
+                android:exported="false"
+        />
     </application>
 
 </manifest>

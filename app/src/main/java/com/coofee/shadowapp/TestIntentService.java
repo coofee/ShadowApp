@@ -3,7 +3,10 @@ package com.coofee.shadowapp;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
+import android.os.IBinder;
 import android.shadow.ShadowLog;
+import android.util.Log;
+import com.coofee.shadowapp.test.BinderProvider;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -68,6 +71,9 @@ public class TestIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Util.print(this);
 
+        IBinder test_service = BinderProvider.getService(this, "test_service");
+        ShadowLog.e("BinderProvider.getService; onHandleIntent; test_service=" + test_service);
+
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_FOO.equals(action)) {
@@ -88,7 +94,7 @@ public class TestIntentService extends IntentService {
      */
     private void handleActionFoo(String param1, String param2) {
         // TODO: Handle action Foo
-        throw new UnsupportedOperationException("Not yet implemented");
+//        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -97,6 +103,6 @@ public class TestIntentService extends IntentService {
      */
     private void handleActionBaz(String param1, String param2) {
         // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
+//        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

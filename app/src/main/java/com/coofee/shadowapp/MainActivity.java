@@ -18,9 +18,7 @@ import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.coofee.shadowapp.test.OsUtil;
-import com.coofee.shadowapp.test.TestLocationManager;
-import com.coofee.shadowapp.test.TestTelephonyManager;
+import com.coofee.shadowapp.test.*;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.android.AndroidClassLoadingStrategy;
 import net.bytebuddy.dynamic.DynamicType;
@@ -132,15 +130,28 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.test_TransactionTooLargeException).setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, TestActivity.class);
-            intent.putExtra("bytes_too_large", new byte[1024 * 1024]);
-            Parcel parcel = Parcel.obtain();
-            parcel.writeParcelable(intent, 0);
-            ShadowLog.e("dataSize=" + parcel.dataSize());
-            parcel.recycle();
-            startActivity(intent);
+            IBinder test_service = BinderProvider.getService(MainActivity.this, "test_service");
+
+            TestIntentService.startActionBaz(MainActivity.this, "", "");
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = new Intent(MainActivity.this, TestActivity.class);
+                    intent.putExtra("bytes_too_large", new byte[1024 * 1024]);
+                    Parcel parcel = Parcel.obtain();
+                    parcel.writeParcelable(intent, 0);
+                    ShadowLog.e("dataSize=" + parcel.dataSize());
+                    parcel.recycle();
+                    startActivity(intent);
+                }
+            }, 2000);
         });
 
+
+        findViewById(R.id.test_replace_Runtime).setOnClickListener(v -> {
+            RuntimeUtil.demo();
+        });
         Trace.endSection();
     }
 
