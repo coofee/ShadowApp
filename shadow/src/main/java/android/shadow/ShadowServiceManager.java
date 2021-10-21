@@ -199,8 +199,59 @@ public class ShadowServiceManager {
             }
         }
 
-        ShadowLog.d("end intercept service.");
-
+        Class<?> class_activityThread = getActivityThreadClass();
+        replacePackageManager(class_activityThread, nameAndServiceMap.get("package"));
+        replacePermissionManager(class_activityThread, nameAndServiceMap.get("permissionmgr"));
         sServiceEntryMap.putAll(nameAndServiceMap);
+
+        ShadowLog.d("end intercept service.");
+    }
+
+    private static Class<?> getActivityThreadClass() {
+        try {
+            return Class.forName("android.app.ActivityThread");
+        } catch (Throwable e) {
+            ShadowLog.e("cannot found class ActivityThread", e);
+        }
+
+        return null;
+    }
+
+    private static void replacePackageManager(Class<?> activityThread, ShadowServiceEntry shadowService) {
+        if (shadowService == null || shadowService.state != ShadowServiceEntry.State.SUCCESS) {
+            ShadowLog.e("fail replacePackageManager for shadow service is null.");
+            return;
+        }
+
+        try {
+            Field field_sPackageManager = activityThread.getDeclaredField("sPackageManager");
+            field_sPackageManager.setAccessible(true);
+            Object originPackageManager = field_sPackageManager.get(null);
+            if (originPackageManager != null) {
+                field_sPackageManager.set(null, shadowService.proxyInterface);
+                ShadowLog.e("replace originPackageManager=" + originPackageManager + " by packageManager=" + shadowService);
+            }
+        } catch (Throwable e) {
+            ShadowLog.e("fail replacePackageManager", e);
+        }
+    }
+
+    private static void replacePermissionManager(Class<?> activityThread, ShadowServiceEntry shadowService) {
+        if (shadowService == null || shadowService.state != ShadowServiceEntry.State.SUCCESS) {
+            ShadowLog.e("fail replacePermissionManager for shadow service is null.");
+            return;
+        }
+
+        try {
+            Field field_sPermissionManager = activityThread.getDeclaredField("sPermissionManager");
+            field_sPermissionManager.setAccessible(true);
+            Object originPermissionManager = field_sPermissionManager.get(null);
+            if (originPermissionManager != null) {
+                field_sPermissionManager.set(null, shadowService.proxyInterface);
+                ShadowLog.e("replace originPermissionManager=" + originPermissionManager + " by permissionmgr=" + shadowService);
+            }
+        } catch (Throwable e) {
+            ShadowLog.e("fail replacePermissionManager", e);
+        }
     }
 }
