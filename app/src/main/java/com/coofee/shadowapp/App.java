@@ -11,6 +11,8 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import com.coofee.shadow.BuildConfig;
+import com.coofee.shadow.stats.OnStatsListener;
+import com.coofee.shadow.stats.ShadowStatsManager;
 import com.coofee.shadowapp.shadow.activity.IActivityManagerInterceptor;
 import com.coofee.shadowapp.shadow.location.ILocationManagerInterceptor;
 import com.coofee.shadowapp.shadow.permission.IPermissionManagerInterceptor;
@@ -18,7 +20,10 @@ import com.coofee.shadowapp.shadow.pm.IPackageManagerInterceptor;
 import com.coofee.shadowapp.shadow.telephony.IPhoneSubInfoInterceptor;
 import com.coofee.shadowapp.shadow.telephony.ITelephonyInterceptor;
 import com.coofee.shadowapp.shadow.wifi.IWifiManagerInterceptor;
+import dalvik.system.BaseDexClassLoader;
 import me.weishu.reflection.Reflection;
+
+import java.io.File;
 
 public class App extends Application {
 
@@ -29,13 +34,34 @@ public class App extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        // readelf -a frida-gadget-15.1.6-android-arm64.so | grep NAME
-        // readelf -a frida-gadget-15.1.6-android-arm64.so | grep NEED
-        // logcat TAG: Frida
-        // clone PythonStudy 仓库获取代码，链接该程序进行测试。
-        // $ python3 frida_shadow_test.py
-        // $ frida -U Gadget -l frida_hook.js
-        System.loadLibrary("frida-gadget");
+
+        ShadowStatsManager.init(base, new ShadowStatsManager.OnInitCallback() {
+            @Override
+            public void onSuccess() {
+                Log.e("ShadowStatsManager", "ShadowStatsManager init success.");
+            }
+
+            @Override
+            public void onError(String msg, Throwable e) {
+                Log.e("ShadowStatsManager", "ShadowStatsManager init fail; " + msg, e);
+            }
+        }).addOnStatsListener(new OnStatsListener() {
+            @Override
+            public void onAttach() {
+
+            }
+
+            @Override
+            public void on(String type, String json) {
+                Log.e("ShadowStatsManager", "on: type=" + type + ", json=" + json);
+            }
+
+            @Override
+            public void onDetach() {
+
+            }
+        });
+
 
         sContext = this;
         initShadowManager(base);
