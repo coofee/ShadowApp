@@ -11,7 +11,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -93,15 +93,15 @@ repositories {
     mavenCentral()
 }
 
-//afterEvaluate {
-//    publish.dependsOn assembleRelease
-//    publish.mustRunAfter assembleRelease
-//
-//    publishToMavenLocal.dependsOn assembleRelease
-//    publishToMavenLocal.mustRunAfter assembleRelease
-//
-//    publishing {
-//
+afterEvaluate {
+    publish.dependsOn assembleRelease
+    publish.mustRunAfter assembleRelease
+
+    publishToMavenLocal.dependsOn assembleRelease
+    publishToMavenLocal.mustRunAfter assembleRelease
+
+    publishing {
+
 //        repositories {
 //            maven {
 //                url "${MAVEN_URL}"
@@ -111,21 +111,23 @@ repositories {
 //                }
 //            }
 //        }
-//
-//        publications {
-//
-//            aar(MavenPublication) {
-//                groupId project.group
-//                artifactId project.name.toLowerCase()
-//                version project.version
-//
+
+        publications {
+
+            aar(MavenPublication) {
+                from components.release
+
+                groupId project.group
+                artifactId project.name.toLowerCase()
+                version project.version
+
 //                artifact file("$buildDir/outputs/aar/${project.name}-release.aar")
-//
-////                pom.withXml(createPomDependencies(["implementation"]))
-//            }
-//        }
-//    }
-//}
+
+//                pom.withXml(createPomDependencies(["implementation"]))
+            }
+        }
+    }
+}
 
 //uploadArchives {
 //    repositories.mavenDeployer {
