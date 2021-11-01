@@ -2,6 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.coofee.shadowapp">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
             android:name=".App"
             android:allowBackup="true"
@@ -10,8 +23,12 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/Theme.ShadowApp">
+        <activity android:name=".TestActivity">
+        </activity>
+
         <service
                 android:name=".TestIntentService"
+                android:process=":sub"
                 android:exported="false">
         </service>
 
@@ -22,6 +39,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <provider
+                android:name="com.coofee.shadowapp.test.BinderProvider"
+                android:authorities="com.coofee.shadowapp.test.BinderProvider"
+                android:exported="false"
+        />
     </application>
 
 </manifest>

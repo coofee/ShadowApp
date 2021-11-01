@@ -5,12 +5,11 @@ plugins {
 }
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -46,29 +45,34 @@ android.libraryVariants.all { variant ->
             println("javaCompilerTask.outputs=$classDir")
             removeClass(
                     classDir,
-                    'android.telephony.TelephonyManager',
-                    'android.telephony.TelephonyManager$CellInfoCallback',
-                    'android.net.wifi.IWifiManager',
-                    'android.net.wifi.WifiManager',
-                    'android.net.wifi.WifiManager$LocalOnlyHotspotCallback',
-                    'android.net.wifi.WifiManager$LocalOnlyHotspotReservation',
-//                    'android.app.ApplicationPackageManager',
-//                    'android.app.ContextImpl',
-//                    'android.app.ApplicationPackageManager',
-//                    'android.content.pm.IPackageManager'
+                    'android.os.ServiceManager',
+                    'android.os.ServiceManager$ServiceNotFoundException'
             )
+//            removeClassByPackageNames(classDir, "android.shadow.")
         }
     }
 }
 
+def removeClassByPackageNames(File classDir, String... packageNames) {
+    if (packageNames == null || packageNames.size() == 0) {
+        return
+    }
+
+    final char dot = '.'
+    for (String packageName : packageNames) {
+        def packageNamePath = packageName.replace(dot, File.separatorChar)
+        File packageNameDir = new File(classDir, packageNamePath)
+        packageNameDir.deleteDir()
+    }
+}
 
 def removeClass(File classDir, String... classes) {
     if (classes == null || classes.size() == 0) {
         return
     }
 
+    final char dot = '.'
     for (String className : classes) {
-        char dot = '.'
         def classNamePath = className.replace(dot, File.separatorChar) + ".class"
         File classFile = new File(classDir, classNamePath)
         println("className=$className, classNamePath=$classNamePath")
@@ -79,7 +83,7 @@ def removeClass(File classDir, String... classes) {
 }
 
 group = 'com.coofee'
-version = '0.0.5'
+version = '0.0.1'
 
 repositories {
 //    maven { url 'https://maven.aliyun.com/repository/google' }

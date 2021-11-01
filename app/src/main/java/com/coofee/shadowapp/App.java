@@ -1,105 +1,116 @@
 package com.coofee.shadowapp;
 
-import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
-import android.location.ShadowLocationManager;
-import android.location.ShadowLocationManagerProvider;
-import android.net.wifi.ShadowWifiManager;
-import android.net.wifi.ShadowWifiManagerProvider;
-import android.os.Build;
-import android.os.Bundle;
-import android.shadow.*;
-import android.telephony.ShadowTelephonyManager;
-import android.telephony.ShadowTelephonyManagerProvider;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.os.SystemClock;
+import android.shadow.ShadowConfig;
+import android.shadow.ShadowLog;
+import android.shadow.ShadowServiceManager;
+import android.util.Log;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
+import com.coofee.shadow.BuildConfig;
+import com.coofee.shadow.stats.ShadowStatsConfig;
+import com.coofee.shadow.stats.ShadowStatsListener;
+import com.coofee.shadow.stats.ShadowStatsManager;
+import com.coofee.shadowapp.shadow.activity.IActivityManagerInterceptor;
+import com.coofee.shadowapp.shadow.activity.IActivityTaskManagerInterceptor;
+import com.coofee.shadowapp.shadow.location.ILocationManagerInterceptor;
+import com.coofee.shadowapp.shadow.permission.IPermissionManagerInterceptor;
+import com.coofee.shadowapp.shadow.pm.IPackageManagerInterceptor;
+import com.coofee.shadowapp.shadow.telephony.IPhoneSubInfoInterceptor;
+import com.coofee.shadowapp.shadow.telephony.ITelephonyInterceptor;
+import com.coofee.shadowapp.shadow.wifi.IWifiManagerInterceptor;
+import me.weishu.reflection.Reflection;
 
-public class App extends ShadowApplication {
+public class App extends Application {
+
+    private static Context sContext;
+
+    private static boolean sIsBackground = false;
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        initShadowManager(base);
-    }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
+        final String TAG = "ShadowApp";
+        final long startTime = SystemClock.uptimeMillis();
+        ShadowStatsManager.init(
+                new ShadowStatsConfig.Builder(base)
+                        .tag(TAG)
+                        .mode(ShadowStatsConfig.MODE_LOCAL_FILE)
+                        .openLog(false)
+//                        .localFilePath("/data/local/tmp/shadow.js")
+                        .build(),
+                new ShadowStatsManager.OnInitCallback() {
+                    @Override
+                    public void onSuccess() {
+                        final long endTime = SystemClock.uptimeMillis();
+                        Log.e(TAG, "ShadowStatsManager init success; consume=" + (endTime - startTime));
+                    }
 
-        // intercept activity context
-        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
-
+                    @Override
+                    public void onError(String msg, Throwable e) {
+                        final long endTime = SystemClock.uptimeMillis();
+                        Log.e(TAG, "ShadowStatsManager init fail; consume=" + (endTime - startTime) + ", msg=" + msg, e);
+                    }
+                }).addStatsListener(new ShadowStatsListener() {
             @Override
-            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-                Context baseContext = activity.getBaseContext();
-                ShadowContext shadowContext = new ShadowContext(application, baseContext);
-                ReflectUtil.setContextWrapper(activity, shadowContext);
-                ShadowLog.e(Build.VERSION.SDK_INT + ", replace activity=" + activity + " baseContext=" + baseContext + " by shadowContext=" + shadowContext);
-            }
-
-            @Override
-            public void onActivityStarted(@NonNull Activity activity) {
-
-            }
-
-            @Override
-            public void onActivityResumed(@NonNull Activity activity) {
-
-            }
-
-            @Override
-            public void onActivityPaused(@NonNull Activity activity) {
-
-            }
-
-            @Override
-            public void onActivityStopped(@NonNull Activity activity) {
-
-            }
-
-            @Override
-            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-
-            }
-
-            @Override
-            public void onActivityDestroyed(@NonNull Activity activity) {
-
+            public void on(String type, String json) {
+                Log.e(TAG, "on: type=" + type + ", json=" + json);
             }
         });
+
+
+        sContext = this;
+        initShadowManager(base);
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifecycleObserver() {
+
+            @OnLifecycleEvent(Lifecycle.Event.ON_START)
+            public void onAppForeground() {
+                sIsBackground = false;
+            }
+
+            @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+            public void onAppBackground() {
+                sIsBackground = true;
+            }
+        });
+
+    }
+
+    public static boolean isBackground() {
+        return sIsBackground;
+    }
+
+    public static Context getContext() {
+        return sContext;
     }
 
     private void initShadowManager(Context base) {
-        BootstrapClass.exempt("Landroid");
-
-        ShadowConfig.Builder shadowConfigBuilder = new ShadowConfig.Builder(base, this);
-
-        if (BuildConfig.DEBUG) {
-            ShadowLog.debug = true;
-            shadowConfigBuilder.interceptAll(true).debug(true);
-            ShadowLog.e("debug or test, we will intercept all.");
-
+        if (Reflection.unseal(base) == 0) {
+            Log.e(ShadowServiceManager.TAG, "success Reflection.unseal().");
         } else {
-            shadowConfigBuilder.interceptAll(false).debug(false);
+            Log.e(ShadowServiceManager.TAG, "fail Reflection.unseal().");
         }
 
-        try {
-            shadowConfigBuilder.addLocationManager(new ShadowLocationManager(), new ShadowLocationManagerProvider.Adapter());
-        } catch (Throwable e) {
-            ShadowLog.e("fail create ShadowLocationManager", e);
-        }
+        ShadowLog.debug = BuildConfig.DEBUG;
+        ShadowConfig.Builder shadowConfigBuilder = new ShadowConfig.Builder(base, this)
+                .interceptAll(true)
+                .debug(BuildConfig.DEBUG);
 
-        try {
-            shadowConfigBuilder.addTelephonyManager(new ShadowTelephonyManager(base), new ShadowTelephonyManagerProvider.Adapter());
-        } catch (Throwable e) {
-            ShadowLog.e("fail create ShadowTelephonyManager", e);
-        }
-
-        try {
-            shadowConfigBuilder.addWifiManager(ShadowWifiManager.create(base), new ShadowWifiManagerProvider.Adapter());
-        } catch (Throwable e) {
-            ShadowLog.e("fail create ShadowWifiManager", e);
-        }
+        shadowConfigBuilder
+                .add(new IWifiManagerInterceptor())
+                .add(new ILocationManagerInterceptor())
+                .add(new ITelephonyInterceptor())
+                .add(new IPhoneSubInfoInterceptor())
+                .add(new IActivityManagerInterceptor())
+                .add(new IActivityTaskManagerInterceptor())
+                .add(new IPermissionManagerInterceptor())
+                .add(new IPackageManagerInterceptor())
+        ;
 
         ShadowServiceManager.init(shadowConfigBuilder.build());
     }
