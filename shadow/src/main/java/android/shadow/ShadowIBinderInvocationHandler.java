@@ -1,7 +1,6 @@
 package android.shadow;
 
 import android.os.IBinder;
-import android.os.Parcel;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -33,21 +32,21 @@ public class ShadowIBinderInvocationHandler implements InvocationHandler {
                 return mProxyInterface;
             }
 
-            if (mOriginBinder != null && "transact".equals(name)) {
-                // TODO check TransactionTooLargeException
-                Parcel data = (Parcel) args[1];
-                if (data != null && data.dataSize() > 0) {
-                    ShadowLog.d("service=" + mServiceName + " transact request data parcelSize=" + data.dataSize(), new Throwable());
-                }
-
-                Object result = ReflectUtil.wrapReturnValue(method.invoke(mOriginBinder, args), method.getReturnType());
-
-                Parcel reply = (Parcel) args[2];
-                if (reply != null && reply.dataSize() > 0) {
-                    ShadowLog.d("service=" + mServiceName + " transact reply data parcelSize=" + reply.dataSize(), new Throwable());
-                }
-                return result;
-            }
+//            if (mOriginBinder != null && "transact".equals(name)) {
+//                // TODO check TransactionTooLargeException
+//                Parcel data = (Parcel) args[1];
+//                if (data != null && data.dataSize() > 0) {
+//                    ShadowLog.d("service=" + mServiceName + " transact request data parcelSize=" + data.dataSize(), new Throwable());
+//                }
+//
+//                Object result = ReflectUtil.wrapReturnValue(method.invoke(mOriginBinder, args), method.getReturnType());
+//
+//                Parcel reply = (Parcel) args[2];
+//                if (reply != null && reply.dataSize() > 0) {
+//                    ShadowLog.d("service=" + mServiceName + " transact reply data parcelSize=" + reply.dataSize(), new Throwable());
+//                }
+//                return result;
+//            }
 
             return ReflectUtil.wrapReturnValue(method.invoke(mOriginBinder, args), method.getReturnType());
         } catch (InvocationTargetException e) {

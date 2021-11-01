@@ -1,10 +1,15 @@
 package android.shadow;
 
+import android.app.Service;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.ServiceManagerBridge;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -82,8 +87,14 @@ public class ShadowServiceManager {
             final String serviceStubProxyName;
             try {
                 serviceInterfaceName = originServiceWrapper.getInterfaceDescriptor();
-                serviceStubName = serviceInterfaceName + "$Stub";
-                serviceStubProxyName = serviceStubName + "$Proxy";
+                if (Service.ACTIVITY_SERVICE.equals(serviceName) && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    serviceStubName = "android.app.ActivityManagerNative";
+                    serviceStubProxyName = "android.app.ActivityManagerProxy";
+                } else {
+                    serviceStubName = serviceInterfaceName + "$Stub";
+                    serviceStubProxyName = serviceStubName + "$Proxy";
+                }
+
                 serviceEntryBuilder.interfaceDescriptor(serviceInterfaceName)
                         .interfaceClassName(serviceInterfaceName)
                         .stubClassName(serviceStubName)
@@ -202,6 +213,7 @@ public class ShadowServiceManager {
         Class<?> class_activityThread = getActivityThreadClass();
         replacePackageManager(class_activityThread, nameAndServiceMap.get("package"));
         replacePermissionManager(class_activityThread, nameAndServiceMap.get("permissionmgr"));
+        replaceActivityManager(nameAndServiceMap.get(Service.ACTIVITY_SERVICE), nameAndServiceMap.get("activity_task"));
         sServiceEntryMap.putAll(nameAndServiceMap);
 
         ShadowLog.d("end intercept service.");
@@ -252,6 +264,92 @@ public class ShadowServiceManager {
             }
         } catch (Throwable e) {
             ShadowLog.e("fail replacePermissionManager", e);
+        }
+    }
+
+    private static void replaceActivityManager(ShadowServiceEntry shadowActivityManager, ShadowServiceEntry shadowActivityTaskManager) {
+        try {
+            Class<?> class_Singleton = Class.forName("android.util.Singleton");
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // android 10.0+
+//        "android.app.ActivityTaskManager"
+//        private static final Singleton<IActivityTaskManager> IActivityTaskManagerSingleton =
+//                new Singleton<IActivityTaskManager>() {
+//                    @Override
+//                    protected IActivityTaskManager create() {
+//                        final IBinder b = ServiceManager.getService(Context.ACTIVITY_TASK_SERVICE);
+//                        return IActivityTaskManager.Stub.asInterface(b);
+//                    }
+
+                Field field_IActivityTaskManagerSingleton = ReflectUtil.getField("android.app.ActivityTaskManager", "IActivityTaskManagerSingleton");
+                Object IActivityTaskManagerSingleton = ReflectUtil.getFieldValue(null, field_IActivityTaskManagerSingleton);
+                Field field_mInstance = ReflectUtil.getField(class_Singleton, "mInstance");
+                Object mInstance = ReflectUtil.getFieldValue(IActivityTaskManagerSingleton, field_mInstance);
+                ShadowLog.e("replaceActivityManager; >=29(Q) field_IActivityTaskManagerSingleton, read mInstance=" + mInstance);
+                ReflectUtil.setFieldValue(IActivityTaskManagerSingleton, field_mInstance, shadowActivityTaskManager.proxyInterface);
+                ShadowLog.e("replaceActivityManager; >=29(Q) field_IActivityTaskManagerSingleton, write mInstance=" + shadowActivityTaskManager.proxyInterface);
+
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // android 8.0+
+
+//        "android.app.ActivityManager"
+//        private static final Singleton<IActivityManager> IActivityManagerSingleton =
+//                new Singleton<IActivityManager>() {
+//                    @Override
+//                    protected IActivityManager create() {
+//                        final IBinder b = ServiceManager.getService(Context.ACTIVITY_SERVICE);
+//                        final IActivityManager am = IActivityManager.Stub.asInterface(b);
+//                        return am;
+//                    }
+//                };
+
+                Field field_IActivityManagerSingleton = ReflectUtil.getField("android.app.ActivityManager", "IActivityManagerSingleton");
+                Object IActivityManagerSingleton = ReflectUtil.getFieldValue(null, field_IActivityManagerSingleton);
+                Field field_mInstance = ReflectUtil.getField(class_Singleton, "mInstance");
+                Object mInstance = ReflectUtil.getFieldValue(IActivityManagerSingleton, field_mInstance);
+                ShadowLog.e("replaceActivityManager; >=26(O) field_IActivityManagerSingleton, read mInstance=" + mInstance);
+                ReflectUtil.setFieldValue(IActivityManagerSingleton, field_mInstance, shadowActivityManager.proxyInterface);
+                ShadowLog.e("replaceActivityManager; >=26(O) field_IActivityManagerSingleton, write mInstance=" + shadowActivityManager.proxyInterface);
+
+            } else {
+
+//          "android.app.ActivityManagerNative"
+//        private static final Singleton<IActivityManager> gDefault = new Singleton<IActivityManager>() {
+//            protected IActivityManager create() {
+//                IBinder b = ServiceManager.getService("activity");
+//                if (false) {
+//                    Log.v("ActivityManager", "default service binder = " + b);
+//                }
+//                IActivityManager am = asInterface(b);
+//                if (false) {
+//                    Log.v("ActivityManager", "default service = " + am);
+//                }
+//                return am;
+//            }
+//        };
+
+//                private static IActivityManager gDefault;
+//                static public IActivityManager getDefault(){
+//
+//                }
+
+                Field field_gDefault = ReflectUtil.getField("android.app.ActivityManagerNative", "gDefault");
+                Object gDefault = ReflectUtil.getFieldValue(null, field_gDefault);
+                if ("android.app.IActivityManager".equals(field_gDefault.getType().getName())) {
+                    ShadowLog.e("replaceActivityManager; <26(O) field_gDefault, read gDefault=" + gDefault);
+                    ReflectUtil.setFieldValue(null, field_gDefault, shadowActivityManager.proxyInterface);
+                    ShadowLog.e("replaceActivityManager; <26(O) field_gDefault, write gDefault=" + shadowActivityManager.proxyInterface);
+                } else {
+                    Field field_mInstance = ReflectUtil.getField(class_Singleton, "mInstance");
+                    Object mInstance = ReflectUtil.getFieldValue(gDefault, field_mInstance);
+                    ShadowLog.e("replaceActivityManager; <26(O) field_gDefault, read mInstance=" + mInstance);
+                    ReflectUtil.setFieldValue(gDefault, field_mInstance, shadowActivityManager.proxyInterface);
+                    ShadowLog.e("replaceActivityManager; <26(O) field_gDefault, write mInstance=" + shadowActivityManager.proxyInterface);
+                }
+            }
+        } catch (Throwable e) {
+            ShadowLog.e("fail replaceActivityManager; shadowActivityManager=" + shadowActivityManager + ", shadowActivityTaskManager=" + shadowActivityTaskManager);
         }
     }
 }

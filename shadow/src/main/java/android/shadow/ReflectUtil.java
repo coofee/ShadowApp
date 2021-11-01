@@ -42,6 +42,45 @@ public class ReflectUtil {
         return accessibleObject;
     }
 
+    public static Field getField(String className, String fieldName) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return getField(clazz, fieldName);
+        } catch (Throwable e) {
+            ShadowLog.e("cannot getField className=" + className + ", fieldName=" + fieldName, e);
+        }
+        return null;
+    }
+
+    public static Field getField(Class<?> clazz, String fieldName) {
+        try {
+            Field declaredField = clazz.getDeclaredField(fieldName);
+            declaredField.setAccessible(true);
+            return declaredField;
+        } catch (Throwable e) {
+            ShadowLog.e("cannot getField clazz=" + clazz + ", fieldName=" + fieldName, e);
+        }
+        return null;
+    }
+
+    public static Object getFieldValue(Object instance, Field field) {
+        try {
+            return field.get(instance);
+        } catch (Throwable e) {
+            ShadowLog.e("cannot getFieldValue field=" + field + ", instance=" + instance, e);
+        }
+
+        return null;
+    }
+
+    public static void setFieldValue(Object instance, Field field, Object value) {
+        try {
+            field.set(instance, value);
+        } catch (Throwable e) {
+            ShadowLog.e("cannot setFieldValue field=" + field + ", instance=" + instance + ", value=" + value, e);
+        }
+    }
+
     public static void printFields(Class<?> clazz) {
         printFields(0, clazz);
     }

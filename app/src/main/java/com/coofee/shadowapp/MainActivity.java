@@ -18,6 +18,7 @@ import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+//import com.coofee.shadow.stats.ShadowStatsManager;
 import com.coofee.shadowapp.test.*;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.android.AndroidClassLoadingStrategy;
@@ -69,6 +70,27 @@ public class MainActivity extends AppCompatActivity {
 //        testShadowApplication();
 
 //        testPackageManager();
+
+        findViewById(R.id.test_start_activity).setOnClickListener(v -> {
+            startActivity(new Intent(this, TestActivity.class));
+        });
+
+        findViewById(R.id.test_start_activity_for_result).setOnClickListener(v -> {
+            startActivityForResult(new Intent(this, TestActivity.class), 20);
+        });
+
+        findViewById(R.id.test_start_activities).setOnClickListener(v -> {
+            startActivities(new Intent[]{new Intent(this, TestActivity.class), new Intent(this, TestActivity.class)});
+        });
+
+        findViewById(R.id.test_start_next_matching_activity).setOnClickListener(v -> {
+            startNextMatchingActivity(new Intent(this, TestActivity.class));
+        });
+
+        findViewById(R.id.test_start_activity_if_needed).setOnClickListener(v -> {
+            startActivityIfNeeded(new Intent(this, TestActivity.class), 20);
+        });
+
 
         findViewById(R.id.replace_package_manager).setOnClickListener(view -> {
             testPackageManager();
@@ -152,6 +174,15 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.test_replace_Runtime).setOnClickListener(v -> {
             RuntimeUtil.demo();
         });
+
+        findViewById(R.id.test_TelephoneManager).setOnClickListener(v -> {
+            TestTelephonyManager.test(this);
+        });
+
+        findViewById(R.id.test_replace_Script).setOnClickListener(v -> {
+//            ShadowStatsManager.getInstance().updateScript(ScriptUtil.SCRIPT);
+        });
+
         Trace.endSection();
     }
 

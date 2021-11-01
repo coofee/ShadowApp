@@ -31,7 +31,7 @@ android {
 }
 
 dependencies {
-//    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'androidx.annotation:annotation:1.2.0'
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
@@ -48,18 +48,31 @@ android.libraryVariants.all { variant ->
                     'android.os.ServiceManager',
                     'android.os.ServiceManager$ServiceNotFoundException'
             )
+//            removeClassByPackageNames(classDir, "android.shadow.")
         }
     }
 }
 
+def removeClassByPackageNames(File classDir, String... packageNames) {
+    if (packageNames == null || packageNames.size() == 0) {
+        return
+    }
+
+    final char dot = '.'
+    for (String packageName : packageNames) {
+        def packageNamePath = packageName.replace(dot, File.separatorChar)
+        File packageNameDir = new File(classDir, packageNamePath)
+        packageNameDir.deleteDir()
+    }
+}
 
 def removeClass(File classDir, String... classes) {
     if (classes == null || classes.size() == 0) {
         return
     }
 
+    final char dot = '.'
     for (String className : classes) {
-        char dot = '.'
         def classNamePath = className.replace(dot, File.separatorChar) + ".class"
         File classFile = new File(classDir, classNamePath)
         println("className=$className, classNamePath=$classNamePath")
@@ -70,7 +83,7 @@ def removeClass(File classDir, String... classes) {
 }
 
 group = 'com.coofee'
-version = '0.0.5'
+version = '0.0.1'
 
 repositories {
 //    maven { url 'https://maven.aliyun.com/repository/google' }
