@@ -93,39 +93,39 @@ repositories {
     mavenCentral()
 }
 
-afterEvaluate {
-    publish.dependsOn assembleRelease
-    publish.mustRunAfter assembleRelease
-
-    publishToMavenLocal.dependsOn assembleRelease
-    publishToMavenLocal.mustRunAfter assembleRelease
-
-    publishing {
-
-        repositories {
-            maven {
-                url "${MAVEN_URL}"
-                credentials {
-                    username MAVEN_USERNAME
-                    password MAVEN_PASSWORD
-                }
-            }
-        }
-
-        publications {
-
-            aar(MavenPublication) {
-                groupId project.group
-                artifactId project.name.toLowerCase()
-                version project.version
-
-                artifact file("$buildDir/outputs/aar/${project.name}-release.aar")
-
-//                pom.withXml(createPomDependencies(["implementation"]))
-            }
-        }
-    }
-}
+//afterEvaluate {
+//    publish.dependsOn assembleRelease
+//    publish.mustRunAfter assembleRelease
+//
+//    publishToMavenLocal.dependsOn assembleRelease
+//    publishToMavenLocal.mustRunAfter assembleRelease
+//
+//    publishing {
+//
+//        repositories {
+//            maven {
+//                url "${MAVEN_URL}"
+//                credentials {
+//                    username MAVEN_USERNAME
+//                    password MAVEN_PASSWORD
+//                }
+//            }
+//        }
+//
+//        publications {
+//
+//            aar(MavenPublication) {
+//                groupId project.group
+//                artifactId project.name.toLowerCase()
+//                version project.version
+//
+//                artifact file("$buildDir/outputs/aar/${project.name}-release.aar")
+//
+////                pom.withXml(createPomDependencies(["implementation"]))
+//            }
+//        }
+//    }
+//}
 
 //uploadArchives {
 //    repositories.mavenDeployer {
