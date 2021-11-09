@@ -1,5 +1,6 @@
 package com.coofee.shadowapp.shadow.telephony;
 
+import android.shadow.ReflectUtil;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceInterceptor;
 
@@ -32,7 +33,7 @@ public class IPhoneSubInfoInterceptor implements ShadowServiceInterceptor {
     @Override
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
         ShadowLog.d("IPhoneSubInfoInterceptor intercept method=" + method.getName());
-        return null;
+        return ReflectUtil.wrapReturnValue(method.invoke(service, args), method.getReturnType());
     }
 
     @Override

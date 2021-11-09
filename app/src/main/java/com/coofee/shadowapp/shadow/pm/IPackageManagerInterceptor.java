@@ -1,5 +1,6 @@
 package com.coofee.shadowapp.shadow.pm;
 
+import android.shadow.ReflectUtil;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceInterceptor;
 
@@ -12,7 +13,7 @@ public class IPackageManagerInterceptor implements ShadowServiceInterceptor {
     @Override
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
         ShadowLog.d("IPackageManagerInterceptor intercept method=" + method + ", args=" + Arrays.toString(args));
-        return method.invoke(service, args);
+        return ReflectUtil.wrapReturnValue(method.invoke(service, args), method.getReturnType());
     }
 
     @Override

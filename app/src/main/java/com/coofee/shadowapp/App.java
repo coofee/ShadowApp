@@ -59,7 +59,7 @@ public class App extends Application {
                 }).addStatsListener(new ShadowStatsListener() {
             @Override
             public void on(String type, String json) {
-                Log.e(TAG, "on: type=" + type + ", json=" + json);
+                Log.e(TAG, "ShadowStatsManager on: type=" + type + ", json=" + json);
             }
         });
 

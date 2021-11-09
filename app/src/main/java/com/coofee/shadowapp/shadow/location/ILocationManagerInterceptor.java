@@ -3,6 +3,7 @@ package com.coofee.shadowapp.shadow.location;
 import android.Manifest;
 import android.app.Service;
 import android.content.pm.PackageManager;
+import android.shadow.ReflectUtil;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceInterceptor;
 import androidx.core.content.ContextCompat;
@@ -35,10 +36,10 @@ public class ILocationManagerInterceptor implements ShadowServiceInterceptor {
 
         // 前台时，有权限再执行;
         if (ContextCompat.checkSelfPermission(App.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            return method.invoke(service, args);
+            return ReflectUtil.wrapReturnValue(method.invoke(service, args), method.getReturnType());
         }
 
-        return null;
+        return ReflectUtil.wrapReturnValue(null, method.getReturnType());
     }
 
     @Override

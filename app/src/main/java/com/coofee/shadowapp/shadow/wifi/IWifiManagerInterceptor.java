@@ -1,6 +1,7 @@
 package com.coofee.shadowapp.shadow.wifi;
 
 import android.app.Service;
+import android.shadow.ReflectUtil;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceInterceptor;
 
@@ -23,7 +24,7 @@ public class IWifiManagerInterceptor implements ShadowServiceInterceptor {
     @Override
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
         ShadowLog.d("WifiManagerInterceptor intercept method=" + method.getName());
-        return null;
+        return ReflectUtil.wrapReturnValue(method.invoke(service, args), method.getReturnType());
     }
 
     @Override

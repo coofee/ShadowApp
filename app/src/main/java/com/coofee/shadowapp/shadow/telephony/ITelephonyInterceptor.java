@@ -1,12 +1,9 @@
 package com.coofee.shadowapp.shadow.telephony;
 
-import android.Manifest;
 import android.app.Service;
-import android.content.pm.PackageManager;
+import android.shadow.ReflectUtil;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceInterceptor;
-import androidx.core.content.ContextCompat;
-import com.coofee.shadowapp.App;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -60,7 +57,7 @@ public class ITelephonyInterceptor implements ShadowServiceInterceptor {
 //            return method.invoke(service, args);
 //        }
 
-        return method.invoke(service, args);
+        return ReflectUtil.wrapReturnValue(method.invoke(service, args), method.getReturnType());
     }
 
     @Override
