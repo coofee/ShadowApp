@@ -1,9 +1,28 @@
+# 使用
+
+```groovy
+
+allprojects {
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+}
+
+
+dependencies {
+    implementation 'com.github.coofee.ShadowApp:shadow:<latest version>'
+    implementation 'com.github.coofee.ShadowApp:shadow-componentmonitor:<latest version>'
+    implementation 'com.github.coofee.ShadowApp:shadow-stats:<latest version>'
+}
+```
+
+最新版本：[![](https://jitpack.io/v/coofee/ShadowApp.svg)](https://jitpack.io/#coofee/ShadowApp)
 
 # 说明
 
 ## 1. `shadow`   
 
-模块代理了android系统的service，同时提供了`ShadowServiceInterceptor`拦截器，用于拦截系统服务实现自定义逻辑 
+模块代理了android系统的service，可以实现`ShadowServiceInterceptor`接口拦截系统服务，实现自定义逻辑。
 
 ![](./doc/shadow_arch.png)
 
@@ -13,7 +32,7 @@
 
 ## 3. `stats`  
 
-模块是对[frida](https://github.com/frida/frida)的一个封装，方便使用aar引用。 
+模块是对 [frida](https://github.com/frida/frida) 的一个封装，方便使用aar引用。 
 
 # License
 
