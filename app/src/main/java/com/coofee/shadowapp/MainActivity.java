@@ -2,8 +2,7 @@ package com.coofee.shadowapp;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
+import android.content.*;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -18,7 +17,6 @@ import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-//import com.coofee.shadow.stats.ShadowStatsManager;
 import com.coofee.shadowapp.test.*;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.android.AndroidClassLoadingStrategy;
@@ -70,6 +68,66 @@ public class MainActivity extends AppCompatActivity {
 //        testShadowApplication();
 
 //        testPackageManager();
+
+        findViewById(R.id.test_start_service).setOnClickListener(v -> {
+            ShadowLog.d("click start service...");
+            try {
+                TestIntentService.startActionBaz(MainActivity.this, "", "");
+            } catch (Throwable e) {
+                ShadowLog.e("click start service", e);
+            }
+        });
+
+        findViewById(R.id.test_bind_service).setOnClickListener(v -> {
+            ShadowLog.d("click bind service...");
+
+            try {
+                bindService(new Intent(MainActivity.this, TestBindService.class), new ServiceConnection() {
+
+                    @Override
+                    public void onServiceConnected(ComponentName name, IBinder service) {
+
+                    }
+
+                    @Override
+                    public void onServiceDisconnected(ComponentName name) {
+
+                    }
+                }, BIND_AUTO_CREATE);
+            } catch (Throwable e) {
+                ShadowLog.e("click bind service", e);
+            }
+        });
+
+        findViewById(R.id.test_send_broadcast_receiver).setOnClickListener(v -> {
+            ShadowLog.d("click send broadcast receiver");
+            try {
+                BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+
+                    }
+                };
+                IntentFilter intentFilter = new IntentFilter(TestReceiver.ACTION);
+                registerReceiver(broadcastReceiver, intentFilter);
+
+                Intent intent = new Intent(MainActivity.this, TestReceiver.class);
+                intent.setAction(TestReceiver.ACTION);
+                sendBroadcast(intent);
+            } catch (Throwable e) {
+                ShadowLog.e("click send broadcast receiver", e);
+            }
+        });
+
+        findViewById(R.id.test_get_content_provider).setOnClickListener(v -> {
+            ShadowLog.d("click get content provider");
+            try {
+                BinderProvider.getService(MainActivity.this, "test_service");
+            } catch (Throwable e) {
+                ShadowLog.e("click get content provider", e);
+            }
+        });
+
 
         findViewById(R.id.test_start_activity).setOnClickListener(v -> {
             startActivity(new Intent(this, TestActivity.class));
@@ -153,8 +211,6 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.test_TransactionTooLargeException).setOnClickListener(v -> {
             IBinder test_service = BinderProvider.getService(MainActivity.this, "test_service");
-
-            TestIntentService.startActionBaz(MainActivity.this, "", "");
 
             new Handler().postDelayed(new Runnable() {
                 @Override

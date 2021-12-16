@@ -2,3 +2,4 @@ rootProject.name = "ShadowApp"
 include ':app'
 include ':shadow'
 include ':stats'
+include ':componentmonitor'

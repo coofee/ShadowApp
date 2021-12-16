@@ -65,6 +65,7 @@ dependencies {
 
     implementation 'com.github.tiann:FreeReflection:3.1.0'
     implementation project(':shadow')
+    implementation project(':componentmonitor')
     implementation project(':stats')
 
     // https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy-android

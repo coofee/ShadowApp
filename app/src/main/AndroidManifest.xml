@@ -4,14 +4,15 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
-
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <queries>
         <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="https" />
+            <action android:name="android.intent.action.VIEW"/>
+
+            <category android:name="android.intent.category.BROWSABLE"/>
+
+            <data android:scheme="https"/>
         </intent>
     </queries>
 
@@ -28,9 +29,24 @@
 
         <service
                 android:name=".TestIntentService"
-                android:process=":sub"
-                android:exported="false">
+                android:exported="false"
+                android:process=":sub">
         </service>
+
+        <service
+                android:name=".TestBindService"
+                android:process=":bind_process"
+                android:enabled="true"
+                android:exported="true">
+        </service>
+
+        <receiver android:name=".TestReceiver"
+                  android:process=":receiver_process">
+            <intent-filter>
+                <action android:name="com.coofee.shadowapp.TestReceiver"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </receiver>
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -41,10 +57,10 @@
         </activity>
 
         <provider
-                android:name="com.coofee.shadowapp.test.BinderProvider"
+                android:name=".test.BinderProvider"
                 android:authorities="com.coofee.shadowapp.test.BinderProvider"
-                android:exported="false"
-        />
+                android:process=":provider_process"
+                android:exported="false"/>
     </application>
 
 </manifest>

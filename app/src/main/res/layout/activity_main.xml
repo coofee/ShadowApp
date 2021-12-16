@@ -9,6 +9,43 @@
         tools:context=".MainActivity">
 
     <Button
+            android:id="@+id/test_start_service"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="startService"
+            android:textSize="20dp"
+            android:textAllCaps="false"
+    />
+
+    <Button
+            android:id="@+id/test_bind_service"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="bindService"
+            android:textSize="20dp"
+            android:textAllCaps="false"
+    />
+
+    <Button
+            android:id="@+id/test_send_broadcast_receiver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="send broadcast receiver"
+            android:textSize="20dp"
+            android:textAllCaps="false"
+    />
+
+    <Button
+            android:id="@+id/test_get_content_provider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="get content provider"
+            android:textSize="20dp"
+            android:textAllCaps="false"
+    />
+
+
+    <Button
             android:id="@+id/test_start_activity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
