@@ -271,38 +271,19 @@ public class ShadowServiceManager {
         try {
             Class<?> class_Singleton = Class.forName("android.util.Singleton");
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // android 10.0+
-//        "android.app.ActivityTaskManager"
-//        private static final Singleton<IActivityTaskManager> IActivityTaskManagerSingleton =
-//                new Singleton<IActivityTaskManager>() {
-//                    @Override
-//                    protected IActivityTaskManager create() {
-//                        final IBinder b = ServiceManager.getService(Context.ACTIVITY_TASK_SERVICE);
-//                        return IActivityTaskManager.Stub.asInterface(b);
-//                    }
-
-                Field field_IActivityTaskManagerSingleton = ReflectUtil.getField("android.app.ActivityTaskManager", "IActivityTaskManagerSingleton");
-                Object IActivityTaskManagerSingleton = ReflectUtil.getFieldValue(null, field_IActivityTaskManagerSingleton);
-                Field field_mInstance = ReflectUtil.getField(class_Singleton, "mInstance");
-                Object mInstance = ReflectUtil.getFieldValue(IActivityTaskManagerSingleton, field_mInstance);
-                ShadowLog.e("replaceActivityManager; >=29(Q) field_IActivityTaskManagerSingleton, read mInstance=" + mInstance);
-                ReflectUtil.setFieldValue(IActivityTaskManagerSingleton, field_mInstance, shadowActivityTaskManager.proxyInterface);
-                ShadowLog.e("replaceActivityManager; >=29(Q) field_IActivityTaskManagerSingleton, write mInstance=" + shadowActivityTaskManager.proxyInterface);
-
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 // android 8.0+
 
-//        "android.app.ActivityManager"
-//        private static final Singleton<IActivityManager> IActivityManagerSingleton =
-//                new Singleton<IActivityManager>() {
-//                    @Override
-//                    protected IActivityManager create() {
-//                        final IBinder b = ServiceManager.getService(Context.ACTIVITY_SERVICE);
-//                        final IActivityManager am = IActivityManager.Stub.asInterface(b);
-//                        return am;
-//                    }
-//                };
+                //        "android.app.ActivityManager"
+                //        private static final Singleton<IActivityManager> IActivityManagerSingleton =
+                //                new Singleton<IActivityManager>() {
+                //                    @Override
+                //                    protected IActivityManager create() {
+                //                        final IBinder b = ServiceManager.getService(Context.ACTIVITY_SERVICE);
+                //                        final IActivityManager am = IActivityManager.Stub.asInterface(b);
+                //                        return am;
+                //                    }
+                //                };
 
                 Field field_IActivityManagerSingleton = ReflectUtil.getField("android.app.ActivityManager", "IActivityManagerSingleton");
                 Object IActivityManagerSingleton = ReflectUtil.getFieldValue(null, field_IActivityManagerSingleton);
@@ -312,6 +293,26 @@ public class ShadowServiceManager {
                 ReflectUtil.setFieldValue(IActivityManagerSingleton, field_mInstance, shadowActivityManager.proxyInterface);
                 ShadowLog.e("replaceActivityManager; >=26(O) field_IActivityManagerSingleton, write mInstance=" + shadowActivityManager.proxyInterface);
 
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    // android 10.0+
+                    //        "android.app.ActivityTaskManager"
+                    //        private static final Singleton<IActivityTaskManager> IActivityTaskManagerSingleton =
+                    //                new Singleton<IActivityTaskManager>() {
+                    //                    @Override
+                    //                    protected IActivityTaskManager create() {
+                    //                        final IBinder b = ServiceManager.getService(Context.ACTIVITY_TASK_SERVICE);
+                    //                        return IActivityTaskManager.Stub.asInterface(b);
+                    //                    }
+
+                    Field field_IActivityTaskManagerSingleton = ReflectUtil.getField("android.app.ActivityTaskManager", "IActivityTaskManagerSingleton");
+                    Object IActivityTaskManagerSingleton = ReflectUtil.getFieldValue(null, field_IActivityTaskManagerSingleton);
+                    field_mInstance = ReflectUtil.getField(class_Singleton, "mInstance");
+                    mInstance = ReflectUtil.getFieldValue(IActivityTaskManagerSingleton, field_mInstance);
+                    ShadowLog.e("replaceActivityManager; >=29(Q) field_IActivityTaskManagerSingleton, read mInstance=" + mInstance);
+                    ReflectUtil.setFieldValue(IActivityTaskManagerSingleton, field_mInstance, shadowActivityTaskManager.proxyInterface);
+                    ShadowLog.e("replaceActivityManager; >=29(Q) field_IActivityTaskManagerSingleton, write mInstance=" + shadowActivityTaskManager.proxyInterface);
+
+                }
             } else {
 
 //          "android.app.ActivityManagerNative"
