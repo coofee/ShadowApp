@@ -14,15 +14,19 @@ public class ShadowConfig {
 
     public final boolean interceptAll;
 
-    public final boolean debug;
-
     public final Map<String, LinkedHashSet<ShadowServiceInterceptor>> interceptorMap;
+
+    public final ShadowLog.ILog logImpl;
+
+    @ShadowLog.LogMode
+    public final int logMode;
 
     public ShadowConfig(Builder builder) {
         this.baseContext = builder.baseContext;
         this.applicationContext = builder.applicationContext;
         this.interceptAll = builder.interceptAll;
-        this.debug = builder.debug;
+        this.logImpl = builder.logImpl;
+        this.logMode = builder.logMode;
 
         Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
         set.addAll(builder.prefixSet);
@@ -44,7 +48,9 @@ public class ShadowConfig {
 
         private boolean interceptAll;
 
-        private boolean debug;
+        private ShadowLog.ILog logImpl;
+
+        private int logMode = ShadowLog.DEBUG;
 
         private final Map<String, LinkedHashSet<ShadowServiceInterceptor>> interceptorMap = new LinkedHashMap<>();
 
@@ -53,7 +59,8 @@ public class ShadowConfig {
             this.applicationContext = shadowConfig.applicationContext;
             this.prefixSet.addAll(shadowConfig.prefixSet);
             this.interceptAll = shadowConfig.interceptAll;
-            this.debug = shadowConfig.debug;
+            this.logImpl = shadowConfig.logImpl;
+            this.logMode = shadowConfig.logMode;
             this.interceptorMap.putAll(shadowConfig.interceptorMap);
         }
 
@@ -113,8 +120,17 @@ public class ShadowConfig {
             return this;
         }
 
-        public Builder debug(boolean debug) {
-            this.debug = debug;
+        public Builder logImpl(ShadowLog.ILog logImpl) {
+            this.logImpl = logImpl;
+            return this;
+        }
+
+        public Builder logMode(@ShadowLog.LogMode int logMode) {
+            if (logMode > ShadowLog.VERBOSE || logMode < ShadowLog.NO) {
+                return this;
+            }
+
+            this.logMode = logMode;
             return this;
         }
 

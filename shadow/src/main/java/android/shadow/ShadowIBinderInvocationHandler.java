@@ -28,7 +28,9 @@ public class ShadowIBinderInvocationHandler implements InvocationHandler {
         try {
             final String name = method.getName();
             if (mProxyInterface != null && "queryLocalInterface".equals(name)) {
-                ShadowLog.e("invoke service=" + mServiceName + " queryLocalInterface, return " + mProxyInterface);
+                if (ShadowLog.logMode() >= ShadowLog.VERBOSE) {
+                    ShadowLog.v("invoke service=" + mServiceName + " queryLocalInterface, return " + mProxyInterface);
+                }
                 return mProxyInterface;
             }
 

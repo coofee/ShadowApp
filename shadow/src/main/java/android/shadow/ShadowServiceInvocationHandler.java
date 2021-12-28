@@ -89,13 +89,17 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         try {
             if (ReflectUtil.isObjectMethod(method)) {
-                ShadowLog.d("invoke service=" + mServiceName + " object method=" + method + " by " + mOriginInterface);
+                if (ShadowLog.logMode() >= ShadowLog.VERBOSE) {
+                    ShadowLog.v("invoke service=" + mServiceName + " object method=" + method + " by " + mOriginInterface);
+                }
                 return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
             }
 
             ShadowServiceInterceptor interceptor = getInterceptor(method);
             if (interceptor == null) {
-                ShadowLog.d("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
+                if (ShadowLog.logMode() >= ShadowLog.VERBOSE) {
+                    ShadowLog.v("invoke service=" + mServiceName + " method=" + method + " by " + mOriginInterface);
+                }
                 return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
             } else {
                 return ReflectUtil.wrapReturnValue(interceptor.invoke(mServiceName, mOriginInterface, method, args), method.getReturnType());
@@ -108,20 +112,24 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
     private ShadowServiceInterceptor getInterceptor(Method method) {
         ShadowServiceInterceptor interceptor = mInterceptorRef.get();
         if (interceptor != null) {
-            final ShadowConfig shadowConfig = ShadowServiceManager.sShadowConfig;
+            final ShadowConfig shadowConfig = ShadowServiceManager.config();
             final boolean intercept = shadowConfig.interceptAll || StackTraceUtil.invokeBy(shadowConfig.prefixSet);
             if (intercept) {
-                ShadowLog.d("intercept service=" + mServiceName + " all method by " + interceptor + ", current method=" + method);
+                if (ShadowLog.logMode() >= ShadowLog.VERBOSE) {
+                    ShadowLog.v("intercept service=" + mServiceName + " all method by " + interceptor + ", current method=" + method);
+                }
             }
             return interceptor;
         }
 
         interceptor = mInterceptMethodMap.get(method.getName());
         if (interceptor != null) {
-            final ShadowConfig shadowConfig = ShadowServiceManager.sShadowConfig;
+            final ShadowConfig shadowConfig = ShadowServiceManager.config();
             final boolean intercept = shadowConfig.interceptAll || StackTraceUtil.invokeBy(shadowConfig.prefixSet);
             if (intercept) {
-                ShadowLog.d("intercept service=" + mServiceName + " method=" + method + " by " + interceptor);
+                if (ShadowLog.logMode() >= ShadowLog.VERBOSE) {
+                    ShadowLog.v("intercept service=" + mServiceName + " method=" + method + " by " + interceptor);
+                }
             }
             return interceptor;
         }

@@ -1,10 +1,27 @@
 package android.shadow;
 
+import androidx.annotation.IntDef;
+
 public class ShadowLog {
 
-    public static boolean debug = false;
+    public static final int NO = 0;
+    public static final int ERROR = 1;
+    public static final int DEBUG = 2;
+    public static final int VERBOSE = 3;
+
+    @IntDef(value = {NO, ERROR, DEBUG, VERBOSE})
+    public static @interface LogMode {
+
+    }
+
+    @LogMode
+    private static int sLogMode = DEBUG;
 
     public interface ILog {
+        void v(String tag, String msg);
+
+        void v(String tag, String msg, Throwable e);
+
         void d(String tag, String msg);
 
         void d(String tag, String msg, Throwable e);
@@ -14,7 +31,18 @@ public class ShadowLog {
         void e(String tag, String msg);
     }
 
-    private static ILog sLogImpl = new ILog() {
+    public static class AndroidLog implements ILog {
+
+        @Override
+        public void v(String tag, String msg) {
+            android.util.Log.v(tag, msg);
+        }
+
+        @Override
+        public void v(String tag, String msg, Throwable e) {
+            android.util.Log.v(tag, msg, e);
+        }
+
         @Override
         public void d(String tag, String msg) {
             android.util.Log.d(tag, msg);
@@ -34,40 +62,67 @@ public class ShadowLog {
         public void e(String tag, String msg) {
             android.util.Log.e(tag, msg);
         }
-    };
+    }
 
-    public static void setLogImpl(ILog logImpl) {
+    private static ILog sLogImpl = new AndroidLog();
+
+    static void setLogImpl(ILog logImpl) {
         if (logImpl != null) {
             sLogImpl = logImpl;
         }
     }
 
+    static void setLogMode(@LogMode int logMode) {
+        if (logMode > ShadowLog.VERBOSE || logMode < ShadowLog.NO) {
+            return;
+        }
+
+        sLogMode = logMode;
+    }
+
+    @LogMode
+    public static int logMode() {
+        return sLogMode;
+    }
+
+    public static void v(String msg) {
+        if (sLogMode >= VERBOSE) {
+            sLogImpl.d(ShadowServiceManager.TAG, msg);
+        }
+    }
+
+    public static void v(String msg, Throwable e) {
+        if (sLogMode >= VERBOSE) {
+            sLogImpl.d(ShadowServiceManager.TAG, msg, e);
+        }
+    }
+
     public static void d(String msg) {
-        if (debug || ShadowServiceManager.debug()) {
+        if (sLogMode >= DEBUG) {
             sLogImpl.d(ShadowServiceManager.TAG, msg);
         }
     }
 
     public static void d(String msg, Throwable e) {
-        if (debug || ShadowServiceManager.debug()) {
+        if (sLogMode >= DEBUG) {
             sLogImpl.d(ShadowServiceManager.TAG, msg, e);
         }
     }
 
     public static void e(String msg, Throwable e) {
-        if (debug || ShadowServiceManager.debug()) {
+        if (sLogMode >= ERROR) {
             sLogImpl.e(ShadowServiceManager.TAG, msg, e);
         }
     }
 
     public static void e(String msg) {
-        if (debug || ShadowServiceManager.debug()) {
+        if (sLogMode >= ERROR) {
             sLogImpl.e(ShadowServiceManager.TAG, msg);
         }
     }
 
     public static void logThrow(String msg) {
-        if (debug || ShadowServiceManager.debug()) {
+        if (sLogMode >= ERROR) {
             sLogImpl.e(ShadowServiceManager.TAG, msg);
             throw new RuntimeException(msg);
         }

@@ -2,7 +2,6 @@ package com.coofee.shadowapp;
 
 import android.app.Application;
 import android.content.Context;
-import android.os.Process;
 import android.os.SystemClock;
 import android.shadow.ShadowConfig;
 import android.shadow.ShadowLog;
@@ -15,7 +14,7 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import com.coofee.componentmonitor.ComponentMonitor;
 import com.coofee.componentmonitor.util.LogComponentObserver;
-import com.coofee.shadow.BuildConfig;
+import com.coofee.componentmonitor.util.ProcessUtil;
 import com.coofee.shadow.stats.ShadowStatsConfig;
 import com.coofee.shadow.stats.ShadowStatsListener;
 import com.coofee.shadow.stats.ShadowStatsManager;
@@ -27,11 +26,6 @@ import com.coofee.shadowapp.shadow.telephony.ITelephonyInterceptor;
 import com.coofee.shadowapp.shadow.wifi.IWifiManagerInterceptor;
 import me.weishu.reflection.Reflection;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 public class App extends Application {
 
     private static Context sContext;
@@ -42,7 +36,7 @@ public class App extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
 
-        if (!ProcessUtil.isMainProcess(base)) {
+        if (!TextUtils.equals(base.getPackageName(), ProcessUtil.getProcessName())) {
             return;
         }
 
@@ -101,16 +95,17 @@ public class App extends Application {
     }
 
     private void initShadowManager(Context base) {
+        final long startTime = SystemClock.elapsedRealtime();
+        final long startThreadTime = SystemClock.currentThreadTimeMillis();
         if (Reflection.unseal(base) == 0) {
             Log.e(ShadowServiceManager.TAG, "success Reflection.unseal().");
         } else {
             Log.e(ShadowServiceManager.TAG, "fail Reflection.unseal().");
         }
 
-        ShadowLog.debug = BuildConfig.DEBUG;
         ShadowConfig.Builder shadowConfigBuilder = new ShadowConfig.Builder(base, this)
                 .interceptAll(true)
-                .debug(BuildConfig.DEBUG);
+                .logMode(ShadowLog.DEBUG);
 
         shadowConfigBuilder
                 .add(new IWifiManagerInterceptor())
@@ -127,52 +122,9 @@ public class App extends Application {
         ;
 
         ShadowServiceManager.init(shadowConfigBuilder.build());
-    }
-
-    public static class ProcessUtil {
-        private static final String TAG = ProcessUtil.class.getSimpleName();
-        private static String processName;
-
-        public ProcessUtil() {
-        }
-
-        public static String getProcessName() {
-            if (TextUtils.isEmpty(processName)) {
-                processName = "";
-                BufferedReader cmdlineReader = null;
-
-                try {
-                    cmdlineReader = new BufferedReader(new InputStreamReader(new FileInputStream("/proc/" + Process.myPid() + "/cmdline"), "iso-8859-1"));
-                    StringBuilder builder = new StringBuilder();
-
-                    int c;
-                    while ((c = cmdlineReader.read()) > 0) {
-                        builder.append((char) c);
-                    }
-
-                    builder.trimToSize();
-                    processName = builder.toString();
-                    Log.d(TAG, "current process name is: " + processName);
-                } catch (Exception var11) {
-                    Log.e(TAG, "read process name error", var11);
-                } finally {
-                    if (cmdlineReader != null) {
-                        try {
-                            cmdlineReader.close();
-                        } catch (IOException var10) {
-                            Log.e(TAG, "close stream error", var10);
-                        }
-                    }
-
-                }
-            }
-
-            return processName;
-        }
-
-        public static boolean isMainProcess(Context context) {
-            return context.getPackageName().equals(getProcessName());
-        }
+        final long endTime = SystemClock.elapsedRealtime();
+        final long endThreadTime = SystemClock.currentThreadTimeMillis();
+        ShadowLog.d("initShadowManager cost " + (endTime - startTime) + ", thread time " + (endThreadTime - startThreadTime));
     }
 
 }

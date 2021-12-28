@@ -16,38 +16,27 @@ import java.util.Map;
 public class ShadowServiceManager {
     public static final String TAG = "ShadowServiceManager";
 
-    static ShadowConfig sShadowConfig;
+    private static ShadowConfig sShadowConfig;
 
     private static final Map<String, ShadowServiceEntry> sServiceEntryMap = new LinkedHashMap<>();
 
     public static void init(ShadowConfig shadowConfig) {
         sShadowConfig = shadowConfig;
+        ShadowLog.setLogImpl(shadowConfig.logImpl);
+        ShadowLog.setLogMode(shadowConfig.logMode);
         intercept(shadowConfig);
-    }
-
-    public static boolean debug() {
-        ShadowConfig config = ShadowServiceManager.sShadowConfig;
-        if (config == null) {
-            return false;
-        }
-
-        return config.debug;
     }
 
     public static ShadowConfig config() {
         return sShadowConfig;
     }
 
-    public static ShadowService getShadowService(String service) {
-        ShadowServiceEntry serviceEntry = sServiceEntryMap.get(service);
-        if (serviceEntry != null && serviceEntry.state == ShadowServiceEntry.State.SUCCESS) {
-            return new ShadowService(serviceEntry);
-        }
-        return ShadowService.EMPTY;
+    public static ShadowServiceEntry getShadowServiceEntry(String service) {
+        return sServiceEntryMap.get(service);
     }
 
     public static Object getService(String service) {
-        ShadowServiceEntry serviceEntry = sServiceEntryMap.get(service);
+        ShadowServiceEntry serviceEntry = getShadowServiceEntry(service);
         if (serviceEntry != null && serviceEntry.state == ShadowServiceEntry.State.SUCCESS) {
             return serviceEntry.proxyInterface;
         }
@@ -64,10 +53,19 @@ public class ShadowServiceManager {
             return;
         }
 
-        ShadowLog.d("service count=" + serviceNameCount);
-        final Map<String, ShadowServiceEntry> nameAndServiceMap = new LinkedHashMap<>(serviceNameCount);
+        final int needInterceptServiceCount = shadowConfig.interceptorMap.size();
+        ShadowLog.d("all service count=" + serviceNameCount + ", need intercept service count=" + needInterceptServiceCount);
+        final Map<String, ShadowServiceEntry> nameAndServiceMap = new LinkedHashMap<>(needInterceptServiceCount);
         for (int i = 0; i < serviceNameCount; i++) {
+            if (needInterceptServiceCount == nameAndServiceMap.size()) {
+                break;
+            }
+
             final String serviceName = serviceNames[i];
+            if (!shadowConfig.interceptorMap.containsKey(serviceName)) {
+                continue;
+            }
+
             final ShadowServiceEntry.Builder serviceEntryBuilder = new ShadowServiceEntry.Builder(serviceName);
 
             final IBinder originService = ServiceManagerBridge.getService(serviceName);
