@@ -15,11 +15,11 @@ public class IActivityTaskManagerInterceptor implements ShadowServiceInterceptor
 
     @Override
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
-        final long startTime = SystemClock.uptimeMillis();
+        final long startTime = SystemClock.elapsedRealtime();
         final Object result = method.invoke(service, args);
-        final long endTime = SystemClock.uptimeMillis();
+        final long endTime = SystemClock.elapsedRealtime();
 
-        ActivityManagerMethods.resolveActivityIntent(method.getName(), args);
+        ActivityManagerMethods.resolveActivityIntent(method.getName(), args, endTime - startTime);
         ShadowLog.d("BinderHook: IActivityTaskManagerInterceptor." + method.getName() + " invoke; args=" + Arrays.toString(args) + ", cost=" + (endTime - startTime));
         return ReflectUtil.wrapReturnValue(result, method.getReturnType());
     }

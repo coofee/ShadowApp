@@ -11,29 +11,29 @@ import java.util.List;
 public class LogComponentObserver implements ComponentObserver {
 
     @Override
-    public void onActivity(String method, Throwable stacktrace, List<ActivityComponentInfo> activityInfos) {
+    public void onActivity(String method, Throwable stacktrace, List<ActivityComponentInfo> activityInfos, long cost) {
         for (ActivityComponentInfo info : activityInfos) {
-            log(info.activityInfo.processName, "BinderHook: ActivityManagerMethods, currentProcess=" + currentProcessName() + ", method=" + method + " start activity=" + info.activityInfo + " in process=" + info.activityInfo.processName + " by intent=" + info.intent, stacktrace);
+            log(info.activityInfo.processName, "BinderHook: ActivityManagerMethods, currentProcess=" + currentProcessName() + ", method=" + method + " cost=" + cost + " start activity=" + info.activityInfo + " in process=" + info.activityInfo.processName + " by intent=" + info.intent, stacktrace);
         }
     }
 
     @Override
-    public void onService(String method, Throwable stacktrace, ServiceComponentInfo serviceInfo) {
-        log(serviceInfo.serviceInfo.processName, "BinderHook: ActivityManagerMethods, currentProcess=" + currentProcessName() + ", method=" + method + " start service=" + serviceInfo.serviceInfo + " in process=" + serviceInfo.serviceInfo.processName + " by intent=" + serviceInfo.intent, stacktrace);
+    public void onService(String method, Throwable stacktrace, ServiceComponentInfo serviceInfo, long cost) {
+        log(serviceInfo.serviceInfo.processName, "BinderHook: ActivityManagerMethods, currentProcess=" + currentProcessName() + ", method=" + method + " cost=" + cost + " start service=" + serviceInfo.serviceInfo + " in process=" + serviceInfo.serviceInfo.processName + " by intent=" + serviceInfo.intent, stacktrace);
     }
 
     @Override
-    public void onContentProvider(String method, Throwable stacktrace, List<ContentProviderInfo> providerInfos) {
+    public void onContentProvider(String method, Throwable stacktrace, List<ContentProviderInfo> providerInfos, long cost) {
         for (ContentProviderInfo providerInfo : providerInfos) {
-            log(providerInfo.providerInfo.processName, "BinderHook: ActivityManagerMethods, currentProcess=" + currentProcessName() + ", method=" + method + " content provider=" + providerInfo + " in process=" + providerInfo.providerInfo.processName, stacktrace);
+            log(providerInfo.providerInfo.processName, "BinderHook: ActivityManagerMethods, currentProcess=" + currentProcessName() + ", method=" + method + " cost=" + cost + " content provider=" + providerInfo + " in process=" + providerInfo.providerInfo.processName, stacktrace);
         }
     }
 
     @Override
-    public void onReceiver(String method, Throwable stacktrace, IntentFilter intentFilter, List<BroadcastReceiverInfo> activityInfos) {
+    public void onReceiver(String method, Throwable stacktrace, IntentFilter intentFilter, List<BroadcastReceiverInfo> activityInfos, long cost) {
         if ("broadcastIntent".equals(method) || "broadcastIntentWithFeature".equals(method)) {
             for (BroadcastReceiverInfo receiverInfo : activityInfos) {
-                log(receiverInfo.activityInfo.processName, "ActivityManagerMethods, send broadcast receiver=" + receiverInfo.activityInfo + " in process=" + receiverInfo.activityInfo.processName + " by intent=" + receiverInfo.intent, new Throwable());
+                log(receiverInfo.activityInfo.processName, "ActivityManagerMethods, cost=" + cost + " send broadcast receiver " + receiverInfo.activityInfo + " in process=" + receiverInfo.activityInfo.processName + " by intent=" + receiverInfo.intent, new Throwable());
             }
             return;
         }
@@ -41,6 +41,8 @@ public class LogComponentObserver implements ComponentObserver {
         if ("registerReceiver".equals(method) || "registerReceiverWithFeature".equals(method)) {
             StringBuilder msg = new StringBuilder("BinderHook: ActivityManagerMethods, currentProcess=")
                     .append(currentProcessName())
+                    .append(" cost=")
+                    .append(cost)
                     .append(" register broadcast receiver");
 
             if (intentFilter != null) {

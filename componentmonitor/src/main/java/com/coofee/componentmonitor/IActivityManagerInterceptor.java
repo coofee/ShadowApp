@@ -15,24 +15,24 @@ public class IActivityManagerInterceptor implements ShadowServiceInterceptor {
 
     @Override
     public Object invoke(String serviceName, Object service, Method method, Object[] args) throws Throwable {
-        final long startTime = SystemClock.uptimeMillis();
+        final long startTime = SystemClock.elapsedRealtime();
         final Object result = method.invoke(service, args);
-        final long endTime = SystemClock.uptimeMillis();
+        final long endTime = SystemClock.elapsedRealtime();
 
         final String methodName = method.getName();
         if (ActivityManagerMethods.ACTIVITY_METHODS.contains(methodName)) {
-            ActivityManagerMethods.resolveActivityIntent(methodName, args);
+            ActivityManagerMethods.resolveActivityIntent(methodName, args, endTime - startTime);
 
         } else if (ActivityManagerMethods.SERVICE_METHODS.contains(methodName)) {
-            ActivityManagerMethods.resolveServiceIntent(methodName, args);
+            ActivityManagerMethods.resolveServiceIntent(methodName, args, endTime - startTime);
 
         } else if (ActivityManagerMethods.BROADCAST_RECEIVER_METHODS.contains(methodName)) {
-            ActivityManagerMethods.resolveBroadcastReceiverIntent(methodName, args, result);
+            ActivityManagerMethods.resolveBroadcastReceiverIntent(methodName, args, result, endTime - startTime);
 
         }
 
         if (ActivityManagerMethods.CONTENT_PROVIDER_METHODS.contains(methodName)) {
-            ActivityManagerMethods.resolveContentProviderIntent(methodName, args, result);
+            ActivityManagerMethods.resolveContentProviderIntent(methodName, args, result, endTime - startTime);
 
         }
 

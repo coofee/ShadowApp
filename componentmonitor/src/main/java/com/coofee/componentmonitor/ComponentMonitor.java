@@ -16,30 +16,30 @@ public class ComponentMonitor {
     private final ComponentObserver mComponentObserver = new ComponentObserver() {
 
         @Override
-        public void onActivity(String method, Throwable stacktrace, List<ActivityComponentInfo> activityInfos) {
+        public void onActivity(String method, Throwable stacktrace, List<ActivityComponentInfo> activityInfos, long cost) {
             for (ComponentObserver observer : mObserverSet) {
-                observer.onActivity(method, stacktrace, activityInfos);
+                observer.onActivity(method, stacktrace, activityInfos, cost);
             }
         }
 
         @Override
-        public void onService(String method, Throwable stacktrace, ServiceComponentInfo serviceInfo) {
+        public void onService(String method, Throwable stacktrace, ServiceComponentInfo serviceInfo, long cost) {
             for (ComponentObserver observer : mObserverSet) {
-                observer.onService(method, stacktrace, serviceInfo);
+                observer.onService(method, stacktrace, serviceInfo, cost);
             }
         }
 
         @Override
-        public void onContentProvider(String method, Throwable stacktrace, List<ContentProviderInfo> providerInfos) {
+        public void onContentProvider(String method, Throwable stacktrace, List<ContentProviderInfo> providerInfos, long cost) {
             for (ComponentObserver observer : mObserverSet) {
-                observer.onContentProvider(method, stacktrace, providerInfos);
+                observer.onContentProvider(method, stacktrace, providerInfos, cost);
             }
         }
 
         @Override
-        public void onReceiver(String method, Throwable stacktrace, IntentFilter intentFilter, List<BroadcastReceiverInfo> activityInfos) {
+        public void onReceiver(String method, Throwable stacktrace, IntentFilter intentFilter, List<BroadcastReceiverInfo> activityInfos, long cost) {
             for (ComponentObserver observer : mObserverSet) {
-                observer.onReceiver(method, stacktrace, intentFilter, activityInfos);
+                observer.onReceiver(method, stacktrace, intentFilter, activityInfos, cost);
             }
         }
     };

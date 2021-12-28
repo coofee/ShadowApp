@@ -60,7 +60,7 @@ public class ActivityManagerMethods {
         return union;
     }
 
-    public static void resolveActivityIntent(String method, Object[] args) {
+    public static void resolveActivityIntent(String method, Object[] args, long cost) {
         if (args == null || args.length < 1) {
             return;
         }
@@ -85,10 +85,10 @@ public class ActivityManagerMethods {
             }
         }
 
-        ComponentMonitor.getComponentObserver().onActivity(method, new Throwable(), activityInfos);
+        ComponentMonitor.getComponentObserver().onActivity(method, new Throwable(), activityInfos, cost);
     }
 
-    public static void resolveServiceIntent(String method, Object[] args) {
+    public static void resolveServiceIntent(String method, Object[] args, long cost) {
         if (args == null || args.length < 1) {
             return;
         }
@@ -99,7 +99,7 @@ public class ActivityManagerMethods {
             if (arg instanceof Intent) {
                 ResolveInfo resolveInfo = IntentUtil.resolveService(context, (Intent) arg);
                 if (resolveInfo != null && resolveInfo.serviceInfo != null) {
-                    ComponentMonitor.getComponentObserver().onService(method, new Throwable(), new ComponentObserver.ServiceComponentInfo((Intent) arg, resolveInfo.serviceInfo));
+                    ComponentMonitor.getComponentObserver().onService(method, new Throwable(), new ComponentObserver.ServiceComponentInfo((Intent) arg, resolveInfo.serviceInfo), cost);
                 }
 
                 break;
@@ -107,7 +107,7 @@ public class ActivityManagerMethods {
         }
     }
 
-    public static void resolveContentProviderIntent(String method, Object[] args, Object returnValue) {
+    public static void resolveContentProviderIntent(String method, Object[] args, Object returnValue, long cost) {
         if (args == null || args.length < 1) {
             return;
         }
@@ -120,7 +120,7 @@ public class ActivityManagerMethods {
                 ProviderInfo providerInfo = (ProviderInfo) info.get(returnValue);
                 if (providerInfo != null) {
                     providerInfos.add(new ComponentObserver.ContentProviderInfo(providerInfo));
-                    ComponentMonitor.getComponentObserver().onContentProvider(method, new Throwable(), providerInfos);
+                    ComponentMonitor.getComponentObserver().onContentProvider(method, new Throwable(), providerInfos, cost);
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -150,10 +150,10 @@ public class ActivityManagerMethods {
             }
         }
 
-        ComponentMonitor.getComponentObserver().onContentProvider(method, new Throwable(), providerInfos);
+        ComponentMonitor.getComponentObserver().onContentProvider(method, new Throwable(), providerInfos, cost);
     }
 
-    public static void resolveBroadcastReceiverIntent(String method, Object[] args, Object returnValue) {
+    public static void resolveBroadcastReceiverIntent(String method, Object[] args, Object returnValue, long cost) {
         if (args == null || args.length < 1) {
             return;
         }
@@ -202,7 +202,7 @@ public class ActivityManagerMethods {
             }
         }
 
-        ComponentMonitor.getComponentObserver().onReceiver(method, new Throwable(), intentFilter, activityInfos);
+        ComponentMonitor.getComponentObserver().onReceiver(method, new Throwable(), intentFilter, activityInfos, cost);
     }
 
     public static String currentProcessName() {

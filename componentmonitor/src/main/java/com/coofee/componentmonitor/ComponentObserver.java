@@ -9,13 +9,13 @@ import android.content.pm.ServiceInfo;
 import java.util.List;
 
 public interface ComponentObserver {
-    void onActivity(String method, Throwable stacktrace, List<ActivityComponentInfo> activityInfos);
+    void onActivity(String method, Throwable stacktrace, List<ActivityComponentInfo> activityInfos, long cost);
 
-    void onService(String method, Throwable stacktrace, ServiceComponentInfo serviceInfo);
+    void onService(String method, Throwable stacktrace, ServiceComponentInfo serviceInfo, long cost);
 
-    void onContentProvider(String method, Throwable stacktrace, List<ContentProviderInfo> providerInfos);
+    void onContentProvider(String method, Throwable stacktrace, List<ContentProviderInfo> providerInfos, long cost);
 
-    void onReceiver(String method, Throwable stacktrace, IntentFilter intentFilter, List<BroadcastReceiverInfo> activityInfos);
+    void onReceiver(String method, Throwable stacktrace, IntentFilter intentFilter, List<BroadcastReceiverInfo> activityInfos, long cost);
 
     public static class ActivityComponentInfo {
         public final Intent intent;

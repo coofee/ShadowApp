@@ -82,8 +82,8 @@ def removeClass(File classDir, String... classes) {
     }
 }
 
-group = 'com.coofee'
-version = '0.0.1'
+group = GROUP_ID
+version = ARTIFACT_VERSION
 
 repositories {
 //    maven { url 'https://maven.aliyun.com/repository/google' }
