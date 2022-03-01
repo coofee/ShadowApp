@@ -2,7 +2,12 @@ package android.shadow;
 
 import android.content.Context;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ShadowConfig {
@@ -21,12 +26,18 @@ public class ShadowConfig {
     @ShadowLog.LogMode
     public final int logMode;
 
+    public final boolean debug;
+
+    public final ShadowDevTools devTools;
+
     public ShadowConfig(Builder builder) {
         this.baseContext = builder.baseContext;
         this.applicationContext = builder.applicationContext;
         this.interceptAll = builder.interceptAll;
         this.logImpl = builder.logImpl;
         this.logMode = builder.logMode;
+        this.debug = builder.debug;
+        this.devTools = builder.devTools;
 
         Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
         set.addAll(builder.prefixSet);
@@ -52,6 +63,10 @@ public class ShadowConfig {
 
         private int logMode = ShadowLog.DEBUG;
 
+        public boolean debug;
+
+        public ShadowDevTools devTools;
+
         private final Map<String, LinkedHashSet<ShadowServiceInterceptor>> interceptorMap = new LinkedHashMap<>();
 
         protected Builder(ShadowConfig shadowConfig) {
@@ -62,6 +77,8 @@ public class ShadowConfig {
             this.logImpl = shadowConfig.logImpl;
             this.logMode = shadowConfig.logMode;
             this.interceptorMap.putAll(shadowConfig.interceptorMap);
+            this.debug = shadowConfig.debug;
+            this.devTools = shadowConfig.devTools;
         }
 
         public Builder(Context baseContext, Context applicationContext) {
@@ -132,6 +149,24 @@ public class ShadowConfig {
 
             this.logMode = logMode;
             return this;
+        }
+
+        public Builder debug(boolean debug) {
+            this.debug = debug;
+            return this;
+        }
+
+        public boolean debug() {
+            return this.debug;
+        }
+
+        public Builder devTools(ShadowDevTools devTools) {
+            this.devTools = devTools;
+            return this;
+        }
+
+        public ShadowDevTools devTools() {
+            return this.devTools;
         }
 
         public ShadowConfig build() {

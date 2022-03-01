@@ -53,7 +53,14 @@ public class ShadowServiceManager {
             return;
         }
 
-        final int needInterceptServiceCount = shadowConfig.interceptorMap.size();
+        final int needInterceptServiceCount;
+        if (shadowConfig.debug) {
+            // debug=拦截系统全部的service
+            needInterceptServiceCount = serviceNameCount;
+        } else {
+            // release=仅拦截需要拦截的service
+            needInterceptServiceCount = shadowConfig.interceptorMap.size();
+        }
         ShadowLog.d("all service count=" + serviceNameCount + ", need intercept service count=" + needInterceptServiceCount);
         final Map<String, ShadowServiceEntry> nameAndServiceMap = new LinkedHashMap<>(needInterceptServiceCount);
         for (int i = 0; i < serviceNameCount; i++) {
@@ -62,7 +69,7 @@ public class ShadowServiceManager {
             }
 
             final String serviceName = serviceNames[i];
-            if (!shadowConfig.interceptorMap.containsKey(serviceName)) {
+            if (!shadowConfig.debug && !shadowConfig.interceptorMap.containsKey(serviceName)) {
                 continue;
             }
 
@@ -191,6 +198,8 @@ public class ShadowServiceManager {
 
         final Map<String, IBinder> serviceCache = ServiceManagerBridge.getServiceCache();
         if (serviceCache != null && !nameAndServiceMap.isEmpty()) {
+            ShadowLog.d("nameAndServiceMap.size=" + nameAndServiceMap.size());
+            
             for (Map.Entry<String, ShadowServiceEntry> entry : nameAndServiceMap.entrySet()) {
                 ShadowServiceEntry serviceEntry = entry.getValue();
                 if (serviceEntry.state != ShadowServiceEntry.State.SUCCESS) {

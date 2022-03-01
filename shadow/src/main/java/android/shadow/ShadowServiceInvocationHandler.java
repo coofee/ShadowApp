@@ -95,6 +95,13 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
                 return ReflectUtil.wrapReturnValue(method.invoke(mOriginInterface, args), method.getReturnType());
             }
 
+            final ShadowConfig config = ShadowServiceManager.config();
+            if (ShadowLog.logMode() >= ShadowLog.VERBOSE || config.debug) {
+                if (config.devTools != null) {
+                    config.devTools.onInvoke(mServiceName, mOriginInterface, method.toString(), args);
+                }
+            }
+
             ShadowServiceInterceptor interceptor = getInterceptor(method);
             if (interceptor == null) {
                 if (ShadowLog.logMode() >= ShadowLog.VERBOSE) {
