@@ -2,31 +2,58 @@ package com.coofee.shadowapp;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.os.*;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Parcel;
+import android.os.SystemClock;
+import android.os.Trace;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceInterceptor;
 import android.shadow.ShadowServiceInvocationHandler;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.coofee.shadowapp.test.*;
+
+import com.coofee.shadowapp.test.BinderProvider;
+import com.coofee.shadowapp.test.OsUtil;
+import com.coofee.shadowapp.test.RuntimeUtil;
+import com.coofee.shadowapp.test.TestLocationManager;
+import com.coofee.shadowapp.test.TestTelephonyManager;
+
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.android.AndroidClassLoadingStrategy;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 
-import java.io.*;
-import java.lang.Process;
-import java.lang.reflect.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -68,6 +95,15 @@ public class MainActivity extends AppCompatActivity {
 //        testShadowApplication();
 
 //        testPackageManager();
+
+        findViewById(R.id.test_get_device_id).setOnClickListener(v -> {
+            try {
+                TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Service.TELEPHONY_SERVICE);
+                ShadowLog.e("MainActivity.test_get_device_id; getDeviceId=" + telephonyManager.getDeviceId());
+            } catch (Throwable e) {
+                ShadowLog.e("fail test_get_device_id.getDeviceId", e);
+            }
+        });
 
         findViewById(R.id.test_start_service).setOnClickListener(v -> {
             ShadowLog.d("click start service...");

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.os.SystemClock;
 import android.shadow.ShadowConfig;
+import android.shadow.ShadowDevTools;
 import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceManager;
 import android.text.TextUtils;
@@ -107,6 +108,8 @@ public class App extends Application {
         Log.e(ShadowServiceManager.TAG, "success Reflection.unseal().");
 
         ShadowConfig.Builder shadowConfigBuilder = new ShadowConfig.Builder(base, this)
+                .debug(BuildConfig.DEBUG)
+                .devTools(ShadowDevTools.DEFAULT_DEV_TOOLS)
                 .interceptAll(true)
 //                .addPackageOrClassNamePrefix("com.coofee.shadowapp")
                 .logMode(ShadowLog.DEBUG);

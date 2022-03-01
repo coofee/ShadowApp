@@ -1,148 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:gravity="center_horizontal"
+        android:orientation="vertical"
         tools:context=".MainActivity">
 
-    <Button
+
+        <Button
+            android:id="@+id/test_get_device_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="testGetDeviceId"
+            android:textAllCaps="false"
+            android:textSize="20dp" />
+
+        <Button
             android:id="@+id/test_start_service"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="startService"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_bind_service"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="bindService"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_send_broadcast_receiver"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="send broadcast receiver"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_get_content_provider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="get content provider"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
 
-    <Button
+        <Button
             android:id="@+id/test_start_activity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="startActivity"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_start_activity_for_result"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="startActivityForResult"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_start_activities"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="startActivities"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_start_next_matching_activity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="startNextMatchingActivity"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_start_activity_if_needed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="startActivityIfNeeded"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/replace_package_manager"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Replace Package Manager"
-            android:textSize="20dp"
             android:textAllCaps="false"
+            android:textSize="20dp"
 
-    />
+            />
 
-    <Button
+        <Button
             android:id="@+id/replace_os"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Replace OS"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_TransactionTooLargeException"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="test TransactionTooLargeException"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_replace_Runtime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="test replace Runtime"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_TelephoneManager"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="test Telephone Manager"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-    <Button
+        <Button
             android:id="@+id/test_replace_Script"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="test replace Script"
-            android:textSize="20dp"
             android:textAllCaps="false"
-    />
+            android:textSize="20dp" />
 
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>
