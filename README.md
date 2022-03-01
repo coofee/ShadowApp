@@ -22,7 +22,7 @@ dependencies {
 
 ## 1. `shadow`   
 
-模块代理了android系统的service，可以实现`ShadowServiceInterceptor`接口拦截系统服务，实现自定义逻辑。
+模块代理了android系统的service，可以实现`ShadowServiceInterceptor`接口拦截系统服务，实现自定义逻辑，[文档详见](./doc/AndroidSystemServiceInterceptor.md)。
 
 ![](./doc/shadow_arch.png)
 
