@@ -118,8 +118,8 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
                 if (ShadowLog.logMode() >= ShadowLog.VERBOSE) {
                     ShadowLog.v("intercept service=" + mServiceName + " all method by " + interceptor + ", current method=" + method);
                 }
+                return interceptor;
             }
-            return interceptor;
         }
 
         interceptor = mInterceptMethodMap.get(method.getName());
@@ -130,8 +130,8 @@ public class ShadowServiceInvocationHandler implements InvocationHandler {
                 if (ShadowLog.logMode() >= ShadowLog.VERBOSE) {
                     ShadowLog.v("intercept service=" + mServiceName + " method=" + method + " by " + interceptor);
                 }
+                return interceptor;
             }
-            return interceptor;
         }
 
         return null;
