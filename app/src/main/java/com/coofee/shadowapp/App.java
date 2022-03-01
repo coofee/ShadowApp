@@ -8,10 +8,12 @@ import android.shadow.ShadowLog;
 import android.shadow.ShadowServiceManager;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
+
 import com.coofee.componentmonitor.ComponentMonitor;
 import com.coofee.componentmonitor.util.LogComponentObserver;
 import com.coofee.componentmonitor.util.ProcessUtil;
@@ -24,6 +26,7 @@ import com.coofee.shadowapp.shadow.pm.IPackageManagerInterceptor;
 import com.coofee.shadowapp.shadow.telephony.IPhoneSubInfoInterceptor;
 import com.coofee.shadowapp.shadow.telephony.ITelephonyInterceptor;
 import com.coofee.shadowapp.shadow.wifi.IWifiManagerInterceptor;
+
 import me.weishu.reflection.Reflection;
 
 public class App extends Application {
@@ -97,14 +100,15 @@ public class App extends Application {
     private void initShadowManager(Context base) {
         final long startTime = SystemClock.elapsedRealtime();
         final long startThreadTime = SystemClock.currentThreadTimeMillis();
-        if (Reflection.unseal(base) == 0) {
-            Log.e(ShadowServiceManager.TAG, "success Reflection.unseal().");
-        } else {
+        if (Reflection.unseal(base) != 0) {
             Log.e(ShadowServiceManager.TAG, "fail Reflection.unseal().");
+            return;
         }
+        Log.e(ShadowServiceManager.TAG, "success Reflection.unseal().");
 
         ShadowConfig.Builder shadowConfigBuilder = new ShadowConfig.Builder(base, this)
                 .interceptAll(true)
+//                .addPackageOrClassNamePrefix("com.coofee.shadowapp")
                 .logMode(ShadowLog.DEBUG);
 
         shadowConfigBuilder
