@@ -31,7 +31,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.coofee.shadowapp.test.BinderProvider;
-import com.coofee.shadowapp.test.OsUtil;
 import com.coofee.shadowapp.test.RuntimeUtil;
 import com.coofee.shadowapp.test.TestLocationManager;
 import com.coofee.shadowapp.test.TestTelephonyManager;
@@ -54,7 +53,12 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -237,10 +241,16 @@ public class MainActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    OsUtil.replaceOsByInvocationHandler();
+//                    OsUtil.replaceOsByInvocationHandler();
+                    getMacAddressFromIp();
+
+                    long currentTime = System.currentTimeMillis();
                     getSharedPreferences("my_sp", MODE_PRIVATE).edit()
-                            .putLong("last_open_time", System.currentTimeMillis())
+                            .putLong("last_open_time", currentTime)
                             .commit();
+
+                    long aLong = getSharedPreferences("my_sp", MODE_PRIVATE).getLong("last_open_time", 0L);
+                    assert aLong == currentTime;
                 }
             }).start();
         });
@@ -534,4 +544,42 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private static void getMacAddressFromIp() {
+        String mac_s = "";
+        StringBuilder buf = new StringBuilder();
+        try {
+            byte[] mac;
+            String ip = getIpAddress();
+            NetworkInterface ne = NetworkInterface.getByInetAddress(InetAddress.getByName(ip));
+            mac = ne.getHardwareAddress();
+            for (byte b : mac) {
+                buf.append(String.format("%02X:", b));
+            }
+            if (buf.length() > 0) {
+                buf.deleteCharAt(buf.length() - 1);
+            }
+            mac_s = buf.toString();
+            ShadowLog.e("getMacAddressFromIp is new：" + ip + "#" + mac_s);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String getIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
 }

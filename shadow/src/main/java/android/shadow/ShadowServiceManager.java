@@ -199,7 +199,7 @@ public class ShadowServiceManager {
         final Map<String, IBinder> serviceCache = ServiceManagerBridge.getServiceCache();
         if (serviceCache != null && !nameAndServiceMap.isEmpty()) {
             ShadowLog.d("nameAndServiceMap.size=" + nameAndServiceMap.size());
-            
+
             for (Map.Entry<String, ShadowServiceEntry> entry : nameAndServiceMap.entrySet()) {
                 ShadowServiceEntry serviceEntry = entry.getValue();
                 if (serviceEntry.state != ShadowServiceEntry.State.SUCCESS) {
@@ -218,12 +218,57 @@ public class ShadowServiceManager {
         }
 
         Class<?> class_activityThread = getActivityThreadClass();
-        replacePackageManager(class_activityThread, nameAndServiceMap.get("package"));
-        replacePermissionManager(class_activityThread, nameAndServiceMap.get("permissionmgr"));
-        replaceActivityManager(nameAndServiceMap.get(Service.ACTIVITY_SERVICE), nameAndServiceMap.get("activity_task"));
+        if (nameAndServiceMap.containsKey(ShadowServiceEntry.SERVICE_NAME_PACKAGE)) {
+            replacePackageManager(class_activityThread, nameAndServiceMap.get("package"));
+        }
+
+        if (nameAndServiceMap.containsKey(ShadowServiceEntry.SERVICE_NAME_PERMISSIONMGR)) {
+            replacePermissionManager(class_activityThread, nameAndServiceMap.get("permissionmgr"));
+        }
+
+        if (nameAndServiceMap.containsKey(ShadowServiceEntry.SERVICE_NAME_ACTIVITY) || nameAndServiceMap.containsKey(ShadowServiceEntry.SERVICE_NAME_ACTIVITY_TASK)) {
+            replaceActivityManager(nameAndServiceMap.get(Service.ACTIVITY_SERVICE), nameAndServiceMap.get("activity_task"));
+        }
+
+        if (shadowConfig.interceptorMap.containsKey(ShadowServiceEntry.SERVICE_NAME_OS)) {
+            ShadowServiceEntry shadowServiceEntry = replaceOs(shadowConfig);
+            nameAndServiceMap.put(shadowServiceEntry.name, shadowServiceEntry);
+        }
+
         sServiceEntryMap.putAll(nameAndServiceMap);
 
         ShadowLog.d("end intercept service.");
+    }
+
+    private static ShadowServiceEntry replaceOs(ShadowConfig shadowConfig) {
+        ShadowServiceEntry serviceEntry;
+
+        try {
+            Class<?> class_Os = Class.forName("libcore.io.Os");
+            Class<?> class_Libcore = Class.forName("libcore.io.Libcore");
+            Field field_os = class_Libcore.getDeclaredField("os");
+            field_os.setAccessible(true);
+            final Object os = field_os.get(null);
+            ShadowLog.e("replaceOs; os=" + os);
+            final ShadowServiceInvocationHandler handler = new ShadowServiceInvocationHandler(ShadowServiceEntry.SERVICE_NAME_OS, os);
+            Object osProxy = Proxy.newProxyInstance(os.getClass().getClassLoader(), new Class[]{class_Os}, handler);
+            handler.add(shadowConfig.interceptorMap.get(ShadowServiceEntry.SERVICE_NAME_OS));
+            field_os.set(null, osProxy);
+            ShadowLog.e("replaceOs; osProxy=" + osProxy);
+            serviceEntry = new ShadowServiceEntry.Builder(ShadowServiceEntry.SERVICE_NAME_OS)
+                    .originInterface(os)
+                    .proxyInterface(osProxy)
+                    .state(ShadowServiceEntry.State.SUCCESS)
+                    .build();
+            ShadowLog.d("success replaceOs service=" + serviceEntry.name + ", serviceEntry=" + serviceEntry);
+        } catch (Throwable e) {
+            ShadowLog.e("fail replaceOs service=" + ShadowServiceEntry.SERVICE_NAME_OS, e);
+            serviceEntry = new ShadowServiceEntry.Builder(ShadowServiceEntry.SERVICE_NAME_OS)
+                    .state(ShadowServiceEntry.State.FAIL_CREATE_PROXY)
+                    .build();
+        }
+
+        return serviceEntry;
     }
 
     private static Class<?> getActivityThreadClass() {

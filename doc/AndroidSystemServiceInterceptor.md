@@ -312,3 +312,7 @@ D/ShadowServiceManager: ITelephonyInterceptor intercept method=getDeviceId
 // android-30
 D/ShadowServiceManager: ITelephonyInterceptor intercept method=getDeviceIdWithFeature
 ```
+
+# 0x04 拦截`libcore.io.Libcore.Os`
+
+参考[OsInterceptor](../app/src/main/java/com/coofee/shadowapp/shadow/os/OsInterceptor.java)可以拦截系统调用。

@@ -22,6 +22,7 @@ import com.coofee.shadow.stats.ShadowStatsConfig;
 import com.coofee.shadow.stats.ShadowStatsListener;
 import com.coofee.shadow.stats.ShadowStatsManager;
 import com.coofee.shadowapp.shadow.location.ILocationManagerInterceptor;
+import com.coofee.shadowapp.shadow.os.OsInterceptor;
 import com.coofee.shadowapp.shadow.permission.IPermissionManagerInterceptor;
 import com.coofee.shadowapp.shadow.pm.IPackageManagerInterceptor;
 import com.coofee.shadowapp.shadow.telephony.IPhoneSubInfoInterceptor;
@@ -121,6 +122,7 @@ public class App extends Application {
                 .add(new IPhoneSubInfoInterceptor())
                 .add(new IPermissionManagerInterceptor())
                 .add(new IPackageManagerInterceptor())
+                .add(new OsInterceptor())
         ;
 
         ComponentMonitor.getInstance()

@@ -4,6 +4,12 @@ import android.os.IBinder;
 
 public class ShadowServiceEntry {
 
+    public static final String SERVICE_NAME_PACKAGE = "package";
+    public static final String SERVICE_NAME_PERMISSIONMGR = "permissionmgr";
+    public static final String SERVICE_NAME_ACTIVITY = "activity";
+    public static final String SERVICE_NAME_ACTIVITY_TASK = "activity_task";
+    public static final String SERVICE_NAME_OS = "os";
+
     public static enum State {
         UNKNOWN("unknown"),
         SUCCESS("success"),
@@ -259,7 +265,8 @@ public class ShadowServiceEntry {
             return false;
         if (originServiceWrapper != null ? !originServiceWrapper.equals(that.originServiceWrapper) : that.originServiceWrapper != null)
             return false;
-        if (proxyService != null ? !proxyService.equals(that.proxyService) : that.proxyService != null) return false;
+        if (proxyService != null ? !proxyService.equals(that.proxyService) : that.proxyService != null)
+            return false;
         if (interfaceDescriptor != null ? !interfaceDescriptor.equals(that.interfaceDescriptor) : that.interfaceDescriptor != null)
             return false;
         if (interfaceClassName != null ? !interfaceClassName.equals(that.interfaceClassName) : that.interfaceClassName != null)
@@ -270,7 +277,8 @@ public class ShadowServiceEntry {
             return false;
         if (interfaceClass != null ? !interfaceClass.equals(that.interfaceClass) : that.interfaceClass != null)
             return false;
-        if (stubClass != null ? !stubClass.equals(that.stubClass) : that.stubClass != null) return false;
+        if (stubClass != null ? !stubClass.equals(that.stubClass) : that.stubClass != null)
+            return false;
         if (stubProxyClass != null ? !stubProxyClass.equals(that.stubProxyClass) : that.stubProxyClass != null)
             return false;
         if (originInterface != null ? !originInterface.equals(that.originInterface) : that.originInterface != null)
